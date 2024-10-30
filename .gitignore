@@ -1,6 +1,6 @@
 data
 checkpoints
-.env.example
+.env
 .idea
 __pycache__/
 *.pyc
