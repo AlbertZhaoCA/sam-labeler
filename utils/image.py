@@ -8,12 +8,15 @@ import numpy as np
 from dotenv import load_dotenv
 
 load_dotenv()
-
 save_dir = os.getenv('SAVE_DIR')
 
-def pick_image(path):
+def pick_image(path, original=False):
     image = Image.open(path)
-    return np.array(image.convert("RGB")) / 255.0
+    if original:
+        return np.array(image.convert("RGB")) / 255.0
+    else:
+        image = image.resize((640,640))
+        return np.array(image.convert("RGB")) / 255.0
 
 
 def pick_images(dir, open=False, recursive=False, repeat=False):
@@ -26,10 +29,12 @@ def pick_images(dir, open=False, recursive=False, repeat=False):
         save_images = _pick_images_recursive(save_dir, open)
         for save_image in save_images:
             for image in images:
+                save_img_sub_dir = save_image.split('/')[-3]
+                img_sub_dir = image.split('/')[-2]
                 temp_save_image = save_image.replace('_lg', '').replace('_sm', '').replace('_md', '').split('/')[-1].split('.')[0]
                 temp_image = image.split('/')[-1].split('.')[0]
 
-                if temp_save_image == temp_image:
+                if temp_save_image == temp_image and save_img_sub_dir == img_sub_dir:
                     images.remove(image)
 
     if open:
