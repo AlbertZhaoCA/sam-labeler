@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, func, Boolean, CheckConstraint
+from sqlalchemy import Column, String, Text, Boolean
 from sqlalchemy.orm import Mapped
 from .base import Base, int_pk, modified_timestamp, non_nullable_name,unique_nullable_name
 

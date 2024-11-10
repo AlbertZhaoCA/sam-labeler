@@ -1,20 +1,15 @@
 from sqlalchemy.orm import Session
-
-from app.db import Setting
-from app.db import transactional_session
+from app.db.models.setting import Setting
 
 
-@transactional_session
 def get_settings(session):
     return session.query(Setting).all()
 
 
-@transactional_session
 def get_setting_by_id(session: Session, settings_id):
     return session.query(Setting).filter(Setting.id == settings_id).first()
 
 
-@transactional_session
 def add_setting(session, dataset_path, model_path, model_type, params, notes, name, is_preference=False):
     setting = Setting(dataset_path=dataset_path, model_path=model_path, model_type=model_type,
                       params=params, notes=notes, name=name, is_preference=is_preference)
@@ -23,7 +18,6 @@ def add_setting(session, dataset_path, model_path, model_type, params, notes, na
     return {"message": "Settings added to database"}
 
 
-@transactional_session
 def update_setting(session, setting_id, dataset_path=None, model_path=None, model_type=None, params=None, notes=None,
                    name=None, is_preference=None):
     setting = session.query(Setting).filter(Setting.id == setting_id).first()
@@ -46,6 +40,5 @@ def update_setting(session, setting_id, dataset_path=None, model_path=None, mode
     return {"message": "Settings updated in database"}
 
 
-@transactional_session
 def get_preference_settings(session):
     return session.query(Setting).filter(Setting.is_preference is True).one()
