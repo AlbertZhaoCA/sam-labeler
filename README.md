@@ -24,7 +24,7 @@ To get started with Sam Labeler, follow these steps:
 1. Clone the repository:
    ```bash
    git clone https://github.com/AlbertZhaoCA/sam-labeler.git
-   cd sam-labeler
+   cd frontend
    pip install -r requirements.txt
    ```
    We recommend using a virtual environment to manage dependencies like anaconda or venv.
@@ -34,8 +34,11 @@ To get started with Sam Labeler, follow these steps:
 ## Upcoming Features 
 
 - [ ] Feature 1: Add React Frontend for click labeling
+    - [x] Next.js frontend
+    - [ ] Add click labeling
 - [ ] Feature 2: Use sqlite or postgres for to be labeled images information storage and management
-
+    - [x] sqlite and sqlalchemy are used for storing labeled images
+      - [ ] Decide whether to migrate to postgres
 ## Documentation
 
 - [ ] Write comment 
