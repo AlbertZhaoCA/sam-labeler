@@ -1,28 +1,33 @@
+import inspect
 import os
-from functools import wraps
+from functools import wraps,partial
 from sqlalchemy import create_engine, BLOB, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, mapped_column
 from sqlalchemy import TIMESTAMP,func
 from typing_extensions import Annotated
 
-
 os.makedirs("data", exist_ok=True)
-
 DATABASE_URL = "sqlite:///data/db.sqlite"
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-
 Base = declarative_base()
-
 Session = sessionmaker(bind=engine)
+
+
+def get_db_session():
+    db = Session()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def transactional_session(func):
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    async def wrapper(*args, **kwargs):
         session = Session()
         try:
-            result = func(session, *args, **kwargs)
+            result = await func(*args, **kwargs)
             session.commit()
             return result
         except Exception as e:
@@ -42,5 +47,6 @@ non_nullable_file_name = Annotated[str, mapped_column(String(50), nullable=False
 unique_file_name = Annotated[str,mapped_column(String(50), nullable=False, unique=True)]
 name = Annotated[str, mapped_column(String(20), nullable=True)]
 non_nullable_name = Annotated[str, mapped_column(String(20), nullable=False)]
+unique_nullable_name = Annotated[str, mapped_column(String(20), nullable=False, unique=True)]
 
 
