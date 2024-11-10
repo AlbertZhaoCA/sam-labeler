@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
-
-from app.db import Annotation
-from app.db import transactional_session
+from app.db.models.annotation import Annotation
+from app.db.models.base import transactional_session
 
 
 @transactional_session
