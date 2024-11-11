@@ -3,9 +3,9 @@ This script is used to label the images in of UAV collected images
 """
 import os
 from utils.image import pick_images
-from lib.label import auto_label
+from lib.sam.label import Labeler
 from dotenv import load_dotenv
-from lib.click_segment import ClickSegmenter
+from lib.sam.click_segment import ClickSegmenter
 
 load_dotenv()
 size = os.getenv('SIZE')
@@ -20,4 +20,4 @@ if mode == 'click':
         click_segmenter = ClickSegmenter(image, 'data/clicked_labeled')
         click_segmenter.run()
 else:
-    auto_label(images,size)
+    Labeler().auto_label(images, size)
