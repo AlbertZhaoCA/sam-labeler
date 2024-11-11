@@ -58,6 +58,7 @@ export default function Settings() {
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(formData);
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
@@ -135,6 +136,7 @@ export default function Settings() {
                     <Input
                         name="params"
                         placeholder="Enter parameters"
+                        disabled
                         value={JSON.stringify(formData.params, null, 2)}
                         onChange={handleChange}
                     />

@@ -1,5 +1,4 @@
 'use client'
-
 import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import toast, { Toaster } from 'react-hot-toast';
 import Image from 'next/image';
 import { DatabaseIcon, BotIcon } from 'lucide-react';
-import { json } from 'stream/consumers';
+import { useRouter } from 'next/navigation';
 
 export default function AnnotationTool() {
     const [image, setImage] = useState<string | null>(null);
@@ -25,6 +24,8 @@ export default function AnnotationTool() {
         name: '',
         id: ''
     });
+    const router = useRouter();
+    
 
     useEffect(() => {
         const fetchData = async () => {
@@ -107,8 +108,9 @@ export default function AnnotationTool() {
             });
     
             const data = await response.json();
-            console.log('File uploaded successfully', data);
+            console.log('File uploaded successfully', data.id);
             toast.success('File uploaded successfully');
+            router.push(`/label/${data.id}`);
           } catch (error) {
             console.error('Error uploading file:', error);
             toast.error('Error uploading file');
@@ -126,8 +128,8 @@ export default function AnnotationTool() {
                     <label className="block text-sm font-medium text-gray-700 mb-4 group-hover:text-blue-500 transition-colors duration-300">Upload Image</label>
                     <Input type="file" accept="image/*" onChange={handleImageUpload} className="group-hover:border-blue-500 transition-colors duration-300" />
                 <div className='flex space-x-5'>
-                    <Button onClick={() => setImage(null)} className="flex-1 bg-white hover:bg-red-400 text-sm text-red-500 hover:text-white-700 transition-colors duration-300">Remove</Button>
-                    <Button onClick={handleFileUpload} className="flex-1 bg-white hover:bg-green-400 text-sm text-blue-500 hover:text-blue-700 transition-colors duration-300">Save</Button>
+                    <Button onClick={() => setImage(null)} className="flex-1 bg-white hover:bg-red-400 text-sm text-red-500 hover:text-white transition-colors duration-300">Remove</Button>
+                    <Button onClick={handleFileUpload} className="flex-1 bg-white hover:bg-green-400 text-sm text-blue-500 hover:text-white transition-colors duration-300">Save</Button>
                 </div>
                 </div>
                 <div className="group mb-4">
