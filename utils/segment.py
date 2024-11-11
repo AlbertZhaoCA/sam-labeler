@@ -6,7 +6,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from segment_anything import automatic_mask_generator
 
-def show_anns(anns, borders=True):
+
+def show_anns(anns: list, borders: bool = True) -> None:
+    """
+    Show annotations on the image.
+    Args:
+        anns (list): The annotations.
+        borders (bool): Whether to show borders.
+    """
     if len(anns) == 0:
         return
     sorted_anns = sorted(anns, key=(lambda x: x['area']), reverse=True)
