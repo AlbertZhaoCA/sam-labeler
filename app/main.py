@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import images, settings
+from app.routes import images, settings,inference
 
 app = FastAPI(description='SAM Labeler', version='0.0.1',title='SAM Labeler')
 
@@ -15,7 +15,7 @@ app.add_middleware(
 
 app.include_router(images.router)
 app.include_router(settings.router)
-
+app.include_router(inference.router)
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000,reload=True)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=True)

@@ -8,7 +8,6 @@ async def add_original_image(session, original_image_data,info=None, filename=No
     return original_image.id
 
 
-
 async def add_annotated_image(session, annotated_image_data, annotation_id, annotation):
     annotated_image = AnnotatedImage(annotation_id=annotation_id, image_data=annotated_image_data)
     annotated_image.annotation = annotation
@@ -17,10 +16,13 @@ async def add_annotated_image(session, annotated_image_data, annotation_id, anno
 
 
 def add_image_by_upload(session, original_image_data, filename=None):
+    image_id = None
     if original_image_data is not None:
         original_image = OriginalImage(image_data=original_image_data, filename=filename)
         session.add(original_image)
         session.commit()
+        image_id = original_image.id
+    return image_id
 
 
 def add_local_images(session, original_image_path, filename=None):

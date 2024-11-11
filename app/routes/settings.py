@@ -13,7 +13,7 @@ class Setting(BaseModel):
     dataset_path: str = Field(..., example="/Users/rupert/deep-learning/segment/checkpoints/datas/data_set")
     model_path: str = Field(..., example="/Users/rupert/deep-learning/segment/checkpoints/sam_vit_b_01ec64.pth")
     model_type: str = Field(..., example="vit_b")
-    params: dict[str, str] = Field(..., example={"dtype": "float32"})
+    params: dict[str, str] = Field( example={"dtype": "float32"})
     notes: str = Field(..., example="This setting is for the vit_b model, only test purpose")
     name: str = Field(..., example="tested config used, stewie")
     is_preference: bool = Field(False, example=False)

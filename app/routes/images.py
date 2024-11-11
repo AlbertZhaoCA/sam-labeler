@@ -18,11 +18,11 @@ async def upload_file(*, session: Session = Depends(get_db_session), file: Uploa
     try:
         original_image_data = await file.read()
         image_bytes = convert_image_data(original_image_data)
-        add_image_by_upload(session, image_bytes, file.filename)
+        image_id = add_image_by_upload(session, image_bytes, file.filename)
     except Exception as e:
         print(e)
         return {"error": str(e)}
-    return {"info": f"file '{file.filename}' uploaded"}
+    return {"info": f"file '{file.filename}' uploaded", "id": image_id}
 
 
 @router.get("/images")
