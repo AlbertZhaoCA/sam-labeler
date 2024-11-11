@@ -1,8 +1,8 @@
 import os
 import cv2
 import numpy as np
-from lib.build import load_model
-from lib.label import Labeler
+from lib.sam.build import load_model
+from lib.sam.label import Labeler
 
 class ClickSegmenter:
     """

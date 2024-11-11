@@ -2,14 +2,15 @@
 This module is used to label the images
 """
 
-from typing import Any
+from typing import Any, Union
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+from utils.path import get_saved_name_and_sub_dir, create_path
 from utils.segment import show_anns
 from utils.image import pick_image
 from dotenv import load_dotenv
-from lib.build import load_model
+from lib.sam.build import load_model
 from segment_anything.automatic_mask_generator import SamAutomaticMaskGenerator,SamPredictor
 
 
@@ -24,13 +25,16 @@ sam = load_model()
 class Labeler:
     """
     This class is used to label the images.
+
+    Note:
+        Modifying the predictor configuration is not currently supported, reload the model costs time.
     """
+
     def __init__(self):
         self.mask_generator: SamAutomaticMaskGenerator = SamAutomaticMaskGenerator(sam)
         self.predictor: SamPredictor = SamPredictor(sam)
 
-
-    def auto_label(self,images:list,size:str):
+    def auto_label(self, images: list, size: str, use_db: bool = False) -> Union[None,list[dict[str, Any]]]:
         """
         Label the images.
         Args:
@@ -38,24 +42,27 @@ class Labeler:
             size (str): The size of the images.
         Return:
             The labeled images.
+
         """
         for image in images:
             print(image)
-            saved_name = image.split('/')[-1].split('.')[0]
-            sub_dir = image.split('/')[-2]
-            save_path = os.path.join(save_dir,sub_dir,size, f"{saved_name}_{size}.png")
-            os.makedirs(os.path.join(save_dir,sub_dir,size), exist_ok=True)
+            saved_name, sub_dir = get_saved_name_and_sub_dir(image)
+            save_path = create_path(destination=save_dir, sub_dir=[sub_dir, size], file_name=f"{saved_name}_{size}.png")
+            os.makedirs(os.path.join(save_dir, sub_dir, size), exist_ok=True)
+
             try:
                 image_data = pick_image(image)
                 if image_data is None:
                     print(f"Image {image} could not be processed.")
                     continue
-
                 masks = self.auto_masks(image_data)
-                plt.figure(figsize=(20, 20))
+                plt.figure(figsize=(8, 6))
                 plt.imshow(image_data)
                 show_anns(masks)
                 plt.axis('off')
+                if use_db:
+                    plt.close()
+                    return masks
                 plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
                 plt.close()
                 print(f"Saved labeled image to: {save_path}")
