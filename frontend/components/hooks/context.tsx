@@ -5,13 +5,11 @@
 // LICENSE file in the root directory of this source tree.
 'use client';
 
-import React, { useState } from "react";
-import { modelInputProps } from "../helpers/Interfaces";
-import AppContext from "./createContext";
+import React, { useState } from 'react';
+import { modelInputProps } from '../helpers/Interfaces';
+import AppContext from './createContext';
 
-const AppContextProvider = (props: {
-  children: React.ReactNode;
-}) => {
+const AppContextProvider = (props: { children: React.ReactNode }) => {
   const [clicks, setClicks] = useState<Array<modelInputProps> | null>(null);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [maskImg, setMaskImg] = useState<HTMLImageElement | null>(null);

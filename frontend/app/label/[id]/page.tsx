@@ -11,23 +11,22 @@
 // Rewrite the fetchEmbedding function to fetch the embedding from the server
 
 'use client';
-import { InferenceSession, Tensor } from "onnxruntime-web";
-import React, { useContext, useEffect, useState } from "react";
-import { handleImageScale } from "@/components/helpers/scaleHelper";
-import { modelScaleProps } from "@/components/helpers/Interfaces";
-import { onnxMaskToImage } from "@/components/helpers/maskUtils";
-import { modelData } from "@/components/helpers/onnxModelAPI";
-import Stage from "@/components/Stage";
-import AppContext from "@/components/hooks/createContext";
-const ort = require("onnxruntime-web");
-import Loading from "@/components/ui/loadding-indictor";
+import { InferenceSession, Tensor } from 'onnxruntime-web';
+import React, { useContext, useEffect, useState } from 'react';
+import { handleImageScale } from '@/components/helpers/scaleHelper';
+import { modelScaleProps } from '@/components/helpers/Interfaces';
+import { onnxMaskToImage } from '@/components/helpers/maskUtils';
+import { modelData } from '@/components/helpers/onnxModelAPI';
+import Stage from '@/components/Stage';
+import AppContext from '@/components/hooks/createContext';
+/* eslint-disable @typescript-eslint/no-require-imports */
+const ort = require('onnxruntime-web');
+import Loading from '@/components/ui/loadding-indictor';
 
-/* @ts-ignore */
-import npyjs from "npyjs";
-const MODEL_DIR = "/model.onnx";
+import npyjs from 'npyjs';
+const MODEL_DIR = '/model.onnx';
 
-
-const App = ({params}:{params:{id:number}}) => {
+const App = ({ params }: { params: Promise<{ id: number }> }) => {
   const {
     clicks: [clicks],
     image: [, setImage],
@@ -37,7 +36,7 @@ const App = ({params}:{params:{id:number}}) => {
   const [tensor, setTensor] = useState<Tensor | null>(null); // Image embedding tensor
   const [loadEmbedding, setLoadEmbedding] = useState<boolean>(true); // Load the image embedding
 
-  // The ONNX model expects the input to be rescaled to 1024. 
+  // The ONNX model expects the input to be rescaled to 1024.
   // The modelScale state variable keeps track of the scale values.
   const [modelScale, setModelScale] = useState<modelScaleProps | null>(null);
 
@@ -49,7 +48,7 @@ const App = ({params}:{params:{id:number}}) => {
       // Load the image
       const IMAGE_PATH = `http://127.0.0.1:8000/images/${id}`;
       const url = new URL(IMAGE_PATH, 'http://127.0.0.1:8000');
-      
+
       loadImage(url);
 
       try {
@@ -62,17 +61,14 @@ const App = ({params}:{params:{id:number}}) => {
       }
 
       // Load the Segment Anything pre-computed embedding
-      Promise.resolve(fetchEmbedding(id)).then(
-        (embedding) => {setTensor(embedding)
-        setLoadEmbedding(false);}
-
-      );
+      Promise.resolve(fetchEmbedding(id)).then((embedding) => {
+        setTensor(embedding);
+        setLoadEmbedding(false);
+      });
     };
-    
+
     initModel();
-
   }, []);
-
 
   const loadImage = async (url: URL) => {
     try {
@@ -81,12 +77,12 @@ const App = ({params}:{params:{id:number}}) => {
       img.onload = () => {
         const { height, width, samScale } = handleImageScale(img);
         setModelScale({
-          height: height,  // original image height
-          width: width,  // original image width
+          height: height, // original image height
+          width: width, // original image width
           samScale: samScale, // scaling factor for image which has been resized to longest side 1024
         });
-        img.width = width; 
-        img.height = height; 
+        img.width = width;
+        img.height = height;
         setImage(img);
       };
     } catch (error) {
@@ -95,22 +91,28 @@ const App = ({params}:{params:{id:number}}) => {
   };
 
   const fetchEmbedding = async (imageId: number) => {
-    const response = await fetch(`http://127.0.0.1:8000/inferences/${imageId}`,{
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `http://127.0.0.1:8000/inferences/${imageId}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-    });
+    );
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
     const arrayBuffer = await response.arrayBuffer();
     const npy = new npyjs();
     const data = await npy.parse(arrayBuffer);
-    const tensor = new ort.Tensor("float32", new Float32Array(data.data), data.shape);
+    const tensor = new ort.Tensor(
+      'float32',
+      new Float32Array(data.data),
+      data.shape,
+    );
     return tensor;
   };
-
 
   // Run the ONNX model every time clicks has changed
   useEffect(() => {
@@ -127,7 +129,7 @@ const App = ({params}:{params:{id:number}}) => {
       )
         return;
       else {
-        // Preapre the model input in the correct format for SAM. 
+        // Preapre the model input in the correct format for SAM.
         // The modelData function is from onnxModelAPI.tsx.
         const feeds = modelData({
           clicks,
@@ -138,21 +140,25 @@ const App = ({params}:{params:{id:number}}) => {
         // Run the SAM ONNX model with the feeds returned from modelData()
         const results = await model.run(feeds);
         const output = results[model.outputNames[0]];
-        // The predicted mask returned from the ONNX model is an array which is 
+        // The predicted mask returned from the ONNX model is an array which is
         // rendered as an HTML image using onnxMaskToImage() from maskUtils.tsx.
-        setMaskImg(onnxMaskToImage(output.data, output.dims[2], output.dims[3]));
+        setMaskImg(
+          onnxMaskToImage(output.data, output.dims[2], output.dims[3]),
+        );
       }
     } catch (e) {
       console.log(e);
     }
   };
 
-  return(<>
-        {
-          loadEmbedding && <Loading text="Loading Image Embedding" color="#31c0cc" size="large" />
-        }
-          <Stage />
-        </>)
+  return (
+    <>
+      {loadEmbedding && (
+        <Loading text="Loading Image Embedding" color="#31c0cc" size="large" />
+      )}
+      <Stage />
+    </>
+  );
 };
 
 export default App;

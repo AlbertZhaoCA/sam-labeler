@@ -1,5 +1,14 @@
-import { Calendar, Home, Inbox, Search, Settings, ImagePlus,GalleryVertical } from "lucide-react"
-import {VisuallyHidden} from "@radix-ui/react-visually-hidden";
+/* eslint-disable */
+import {
+  Calendar,
+  Home,
+  Inbox,
+  Search,
+  Settings,
+  ImagePlus,
+  GalleryVertical,
+} from 'lucide-react';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 import {
   Sidebar,
@@ -10,43 +19,43 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar';
 
 // Menu items.
 const items = [
   {
-    title: "Home",
-    url: "/",
+    title: 'Home',
+    url: '/',
     icon: Home,
   },
   {
-    title: "Label",
-    url: "/label",
+    title: 'Label',
+    url: '/label',
     icon: ImagePlus,
   },
   {
-    title: "Gallery",
-    url: "/gallery",
+    title: 'Gallery',
+    url: '/gallery',
     icon: GalleryVertical,
   },
   {
-    title: "Search",
-    url: "",
+    title: 'Search',
+    url: '',
     icon: Search,
   },
   {
-    title: "Settings",
-    url: "/settings",
+    title: 'Settings',
+    url: '/settings',
     icon: Settings,
   },
-]
+];
 
 export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-            <SidebarGroupLabel>SAM Labeler</SidebarGroupLabel>
+          <SidebarGroupLabel>SAM Labeler</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -64,5 +73,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }

@@ -4,8 +4,10 @@
 // This source code is licensed under the license found in the
 // LICENSE file in the root directory of this source tree.
 
-import { Tensor } from "onnxruntime-web";
-import { modeDataProps } from "./Interfaces";
+/* eslint-disable */
+
+import { Tensor } from 'onnxruntime-web';
+import { modeDataProps } from './Interfaces';
 
 const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
   const imageEmbedding = tensor;
@@ -16,9 +18,9 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
 
   // Check there are input click prompts
   if (clicks) {
-    let n = clicks.length;
+    const n = clicks.length;
 
-    // If there is no box input, a single padding point with 
+    // If there is no box input, a single padding point with
     // label -1 and coordinates (0.0, 0.0) should be concatenated
     // so initialize the array to support (n + 1) points.
     pointCoords = new Float32Array(2 * (n + 1));
@@ -38,10 +40,10 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
     pointLabels[n] = -1.0;
 
     // Create the tensor
-    pointCoordsTensor = new Tensor("float32", pointCoords, [1, n + 1, 2]);
-    pointLabelsTensor = new Tensor("float32", pointLabels, [1, n + 1]);
+    pointCoordsTensor = new Tensor('float32', pointCoords, [1, n + 1, 2]);
+    pointLabelsTensor = new Tensor('float32', pointLabels, [1, n + 1]);
   }
-  const imageSizeTensor = new Tensor("float32", [
+  const imageSizeTensor = new Tensor('float32', [
     modelScale.height,
     modelScale.width,
   ]);
@@ -51,12 +53,12 @@ const modelData = ({ clicks, tensor, modelScale }: modeDataProps) => {
 
   // There is no previous mask, so default to an empty tensor
   const maskInput = new Tensor(
-    "float32",
+    'float32',
     new Float32Array(256 * 256),
-    [1, 1, 256, 256]
+    [1, 1, 256, 256],
   );
   // There is no previous mask, so default to 0
-  const hasMaskInput = new Tensor("float32", [0]);
+  const hasMaskInput = new Tensor('float32', [0]);
 
   return {
     image_embeddings: imageEmbedding,

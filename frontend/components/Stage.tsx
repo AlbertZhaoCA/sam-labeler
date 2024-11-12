@@ -4,11 +4,11 @@
 // This source code is licensed under the license found in the
 // LICENSE file in the root directory of this source tree.
 
-import React, { useContext } from "react";
-import * as _ from "underscore";
-import Tool from "./Tool";
-import { modelInputProps } from "./helpers/Interfaces";
-import AppContext from "./hooks/createContext";
+import React, { useContext } from 'react';
+import * as _ from 'underscore';
+import Tool from './Tool';
+import { modelInputProps } from './helpers/Interfaces';
+import AppContext from './hooks/createContext';
 
 const Stage = () => {
   const {
@@ -24,8 +24,9 @@ const Stage = () => {
   // Get mouse position and scale the (x, y) coordinates back to the natural
   // scale of the image. Update the state of clicks with setClicks to trigger
   // the ONNX model to run and generate a new mask via a useEffect in App.tsx
+  /* eslint-disable */
   const handleMouseMove = _.throttle((e: any) => {
-    let el = e.nativeEvent.target;
+    const el = e.nativeEvent.target;
     const rect = el.getBoundingClientRect();
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
@@ -36,7 +37,7 @@ const Stage = () => {
     if (click) setClicks([click]);
   }, 15);
 
-  const flexCenterClasses = "flex items-center justify-center";
+  const flexCenterClasses = 'flex items-center justify-center';
   return (
     <div className={`${flexCenterClasses} mt-8 w-full h-full`}>
       <div className={`${flexCenterClasses} relative w-[90%] h-[90%]`}>

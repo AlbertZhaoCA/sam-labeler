@@ -4,10 +4,10 @@
 // This source code is licensed under the license found in the
 // LICENSE file in the root directory of this source tree.
 'use client';
-import React, { useContext, useEffect, useState } from "react";
-import AppContext from "./hooks/createContext";
-import { ToolProps } from "./helpers/Interfaces";
-import * as _ from "underscore";
+import React, { useContext, useEffect, useState } from 'react';
+import AppContext from './hooks/createContext';
+import { ToolProps } from './helpers/Interfaces';
+import * as _ from 'underscore';
 
 const Tool = ({ handleMouseMove }: ToolProps) => {
   const {
@@ -41,7 +41,7 @@ const Tool = ({ handleMouseMove }: ToolProps) => {
     };
   }, [image]);
 
-  const imageClasses = "";
+  const imageClasses = '';
   const maskImageClasses = `absolute opacity-40 pointer-events-none`;
 
   // Render the image and the predicted mask image on top
@@ -54,7 +54,7 @@ const Tool = ({ handleMouseMove }: ToolProps) => {
           onTouchStart={handleMouseMove}
           src={image.src}
           className={`${
-            shouldFitToWidth ? "w-full" : "h-full"
+            shouldFitToWidth ? 'w-full' : 'h-full'
           } ${imageClasses}`}
         ></img>
       )}
@@ -62,7 +62,7 @@ const Tool = ({ handleMouseMove }: ToolProps) => {
         <img
           src={maskImg.src}
           className={`${
-            shouldFitToWidth ? "w-full" : "h-full"
+            shouldFitToWidth ? 'w-full' : 'h-full'
           } ${maskImageClasses}`}
         ></img>
       )}
