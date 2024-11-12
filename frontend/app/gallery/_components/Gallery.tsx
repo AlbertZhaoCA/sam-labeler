@@ -1,3 +1,4 @@
+// To do: Nextjs image optimization has some issues, fix it (cannot load large files)
 import {
   Card,
   CardContent,
@@ -50,6 +51,7 @@ export function GalleryImage({
           height={400}
           width={200}
           {...img}
+          unoptimized
         />
       </CardContent>
       <CardFooter>{info}</CardFooter>
@@ -62,7 +64,7 @@ export function Gallery({ items }: { items: image[] }) {
     <div className="grid grid-rows-1 grid-cols-2 sm:grid-cols-2  lg:grid-cols-4  gap-4">
       {items.map((image: image) => (
         <GalleryImage
-          src={`http://127.0.0.1:8000/${image.url}`}
+          src={`http://127.0.0.1:8000/images/${image.id}`}
           key={image.id}
           title={image.filename}
         />
