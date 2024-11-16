@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.db.models.setting import Setting
+from app.db.models.setting import Setting, Preference
 
 
 def get_settings(session):
@@ -10,9 +10,9 @@ def get_setting_by_id(session: Session, settings_id):
     return session.query(Setting).filter(Setting.id == settings_id).first()
 
 
-def add_setting(session, dataset_path, model_path, model_type, params, notes, name, is_preference=False):
+def add_setting(session, dataset_path, model_path, model_type, params, notes, name):
     setting = Setting(dataset_path=dataset_path, model_path=model_path, model_type=model_type,
-                      params=params, notes=notes, name=name, is_preference=is_preference)
+                      params=params, notes=notes, name=name)
     session.add(setting)
     session.commit()
     return {"message": "Settings added to database"}
@@ -40,5 +40,30 @@ def update_setting(session, setting_id, dataset_path=None, model_path=None, mode
     return {"message": "Settings updated in database"}
 
 
-def get_preference_settings(session):
-    return session.query(Setting).filter(Setting.is_preference is True).one()
+def get_preference_setting_id(session):
+    preference = session.query(Preference).first()
+    if not preference:
+        default_preference = Preference(setting_id=1)
+        session.add(default_preference)
+        session.commit()
+        session.refresh(default_preference)
+        return default_preference.setting_id
+    return preference.setting_id
+
+def get_preference_setting(session):
+    setting_id = get_preference_setting_id(session)
+    setting = get_setting_by_id(session, setting_id)
+    return setting
+
+
+def update_preference_setting(session, setting_id):
+    preference = session.query(Preference).first()
+    if not preference:
+        preference = Preference(setting_id=setting_id)
+        session.add(preference)
+    else:
+        preference.setting_id = setting_id
+    session.commit()
+    return {"message": "Preference setting updated in database", "setting_id": setting_id}
+
+

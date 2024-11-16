@@ -39,12 +39,15 @@ def transactional_session(func):
 
 
 int_pk = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
-modified_timestamp = Annotated[str, mapped_column(TIMESTAMP,nullable=False, server_default=func.current_timestamp(), server_onupdate=func.current_timestamp())]
+created_timestamp = Annotated[str,mapped_column(TIMESTAMP,nullable=False, server_default=func.now())]
+modified_timestamp = Annotated[str,mapped_column(TIMESTAMP,nullable=False, server_default=func.now(),
+                                                 server_onupdate=func.now())]
 non_nullable_blob_data = Annotated[bytes, mapped_column(BLOB,nullable=False)]
 unique_non_nullable_blob_data = Annotated[bytes,mapped_column(BLOB, nullable=False,unique=True)]
 nullable_file_name = Annotated[str, mapped_column(String(50), nullable=True)]
 non_nullable_file_name = Annotated[str, mapped_column(String(50), nullable=False)]
 unique_file_name = Annotated[str,mapped_column(String(50), nullable=False, unique=True)]
+unique_name = Annotated[str, mapped_column(String(20), unique=True, nullable=False)]
 name = Annotated[str, mapped_column(String(20), nullable=True)]
 non_nullable_name = Annotated[str, mapped_column(String(20), nullable=False)]
 unique_nullable_name = Annotated[str, mapped_column(String(20), nullable=False, unique=True)]

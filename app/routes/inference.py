@@ -3,7 +3,7 @@ from io import BytesIO
 import numpy as np
 from fastapi import APIRouter, UploadFile, File, Depends
 from starlette.responses import StreamingResponse
-from app.db.data_access.image import get_image_by_id
+from app.db.data_access.image import get_or_image_by_id
 from lib.sam.embedding import Embedder
 from app.db.models.base import get_db_session
 router = APIRouter()
@@ -22,7 +22,7 @@ async def infer(file: UploadFile = File(...)):
 
 @router.post("/inferences/{image_id}")
 async def infer_by_image_id(image_id:int, session=Depends(get_db_session)):
-    image = await get_image_by_id(session,image_id)
+    image = get_or_image_by_id(session,image_id)
     embedding = embedder.process_image(image.image_data)
     byte_stream = BytesIO()
     np.save(byte_stream, embedding)
