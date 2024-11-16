@@ -14,8 +14,6 @@ export default function AnnotationTool() {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const [mode, setMode] = useState<'auto' | 'manual'>('manual');
   const [loading, setLoading] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
   const [setting, setSetting] = useState({
     dataset_path: '',
     model_path: '',
@@ -25,6 +23,11 @@ export default function AnnotationTool() {
     name: '',
     id: '',
   });
+  const [fileFormData, setFileFormData] = useState({
+    info: '',
+    filename: '',
+  });
+
   const router = useRouter();
 
   useEffect(() => {
@@ -40,9 +43,11 @@ export default function AnnotationTool() {
         if (data && data.length > 0) {
           setSetting(data[0]);
         }
-        toast.success('Synced with setting.py');
+        /* eslint-disable @typescript-eslint/no-unused-expressions */
+        data[0]
+          ? toast.success('synced with setting ⚙️')
+          : toast.error('No setting found');
       } catch (error) {
-        console.error('Failed to fetch data:', error);
         toast.error('Failed to fetch data');
       }
     };
@@ -53,16 +58,12 @@ export default function AnnotationTool() {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
       setFile(e.target.files[0]);
+      setFileFormData({ ...fileFormData, filename: e.target.files[0].name });
       reader.onload = (event) => {
         setImage(event.target?.result as string);
       };
       reader.readAsDataURL(e.target.files[0]);
     }
-  };
-
-  const handleRatingChange = (newRating: number) => {
-    setRating(newRating);
-    toast.success('Rating updated');
   };
 
   const handleModeChange = (newMode: 'auto' | 'manual') => {
@@ -95,6 +96,7 @@ export default function AnnotationTool() {
     if (file) {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('image', JSON.stringify(fileFormData));
 
       try {
         const response = await fetch('http://127.0.0.1:8000/images', {
@@ -107,10 +109,14 @@ export default function AnnotationTool() {
         toast.success('File uploaded successfully');
         router.push(`/label/${data.id}`);
       } catch (error) {
-        console.error('Error uploading file:', error);
+        console.log(error);
         toast.error('Error uploading file');
       }
     }
+  };
+
+  const handleFileDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileFormData({ ...fileFormData, [e.target.name]: e.target.value });
   };
 
   return (
@@ -133,13 +139,13 @@ export default function AnnotationTool() {
               onClick={() => setImage(null)}
               className="flex-1 bg-white hover:bg-red-400 text-sm text-red-500 hover:text-white transition-colors duration-300"
             >
-              Remove
+              Remove 🗑️
             </Button>
             <Button
               onClick={handleFileUpload}
               className="flex-1 bg-white hover:bg-green-400 text-sm text-blue-500 hover:text-white transition-colors duration-300"
             >
-              Save
+              Start 🏷️
             </Button>
           </div>
         </div>
@@ -166,67 +172,38 @@ export default function AnnotationTool() {
           <Skeleton className="h-64 w-full" />
         ) : (
           image && (
-            <div className="relative group">
+            <div className="relative group space-y-2">
               <Image
-                width={200}
+                width={100}
                 height={200}
                 src={image}
                 alt="Annotated"
-                className="w-3/4 h-auto rounded-md mx-auto"
+                className="w-[350px] max-h-[600px] h-auto rounded-md mx-auto"
               />
-              {mode === 'manual' && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-white bg-black bg-opacity-50 p-2 rounded">
-                    Manual Annotation Mode
-                  </span>
-                </div>
-              )}
-              {mode === 'auto' && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-white bg-black bg-opacity-50 p-2 rounded">
-                    Auto Annotation Mode
-                  </span>
-                </div>
-              )}
+
+              <form className="mb-4 font-mono space-y-5">
+                <label className="block text-sm font-medium text-gray-700">
+                  Image name
+                </label>
+                <Input
+                  type="text"
+                  name="filename"
+                  value={fileFormData.filename}
+                  onChange={handleFileDataChange}
+                />
+                <label className="block text-sm font-medium text-gray-700">
+                  Comment
+                </label>
+                <Input
+                  type="text"
+                  name="info"
+                  value={fileFormData.info}
+                  onChange={handleFileDataChange}
+                />
+              </form>
             </div>
           )
         )}
-        <form action="">
-          <label className="block text-sm font-medium text-gray-700 mb-4">
-            Comments
-          </label>
-          <Input type="text" placeholder="Enter Your ideas" className="mb-4" />
-          <label className="block text-sm font-medium text-gray-700 mb-4">
-            Enter File Name
-          </label>
-          <Input
-            type="text"
-            placeholder="Enter the file name"
-            className="mb-4"
-          />
-          <div className="mb-8">
-            <label className="block text-sm font-medium text-gray-700 mb-4">
-              Rate this Annotations
-            </label>
-            <div className="flex space-x-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => handleRatingChange(star)}
-                  onMouseEnter={() => setHoverRating(star)}
-                  onMouseLeave={() => setHoverRating(0)}
-                  className={`text-2xl ${hoverRating >= star || rating >= star ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-500 transition-colors duration-300`}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-          </div>
-          <Button type="submit" className="w-full">
-            Submit
-          </Button>
-        </form>
       </div>
 
       <div className="overflow-auto flex flex-col space-y-4 break-all border-2 rounded-md mr-2 p-2 border-[rgba(193,87,87,0.7)]">

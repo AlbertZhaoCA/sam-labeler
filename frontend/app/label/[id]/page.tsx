@@ -22,12 +22,13 @@ import AppContext from '@/components/hooks/createContext';
 /* eslint-disable @typescript-eslint/no-require-imports */
 const ort = require('onnxruntime-web');
 import Loading from '@/components/ui/loadding-indictor';
-
 import npyjs from 'npyjs';
+
 const MODEL_DIR = '/model.onnx';
 
 const App = ({ params }: { params: Promise<{ id: number }> }) => {
   const {
+    original_id: [, setOriginal_id],
     clicks: [clicks],
     image: [, setImage],
     maskImg: [, setMaskImg],
@@ -45,6 +46,7 @@ const App = ({ params }: { params: Promise<{ id: number }> }) => {
   useEffect(() => {
     const initModel = async () => {
       const { id } = await params;
+      setOriginal_id(id);
       // Load the image
       const IMAGE_PATH = `http://127.0.0.1:8000/images/${id}`;
       const url = new URL(IMAGE_PATH, 'http://127.0.0.1:8000');
