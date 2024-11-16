@@ -1,14 +1,12 @@
 /* eslint-disable */
 import {
-  Calendar,
+  FileStack,
   Home,
-  Inbox,
   Search,
   Settings,
   ImagePlus,
   GalleryVertical,
 } from 'lucide-react';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 import {
   Sidebar,
@@ -47,6 +45,11 @@ const items = [
     title: 'Settings',
     url: '/settings',
     icon: Settings,
+  },
+  {
+    title: 'API Docs',
+    url: 'http://127.0.0.1:8000/docs',
+    icon: FileStack,
   },
 ];
 
