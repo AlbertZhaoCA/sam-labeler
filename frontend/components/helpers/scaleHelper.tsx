@@ -5,7 +5,6 @@
 // LICENSE file in the root directory of this source tree.
 
 /* eslint-disable */
-
 // Helper function for handling image scaling needed for SAM
 const handleImageScale = (image: HTMLImageElement) => {
   // Input images to SAM must be resized so the longest side is 1024

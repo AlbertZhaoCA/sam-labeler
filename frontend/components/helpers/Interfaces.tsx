@@ -5,7 +5,6 @@
 // LICENSE file in the root directory of this source tree.
 
 /* eslint-disable */
-
 import { Tensor } from 'onnxruntime-web';
 
 export interface modelScaleProps {
@@ -28,4 +27,6 @@ export interface modeDataProps {
 
 export interface ToolProps {
   handleMouseMove: (e: any) => void;
+  handleMouseClick: (e: any) => void;
+  handleRightClick: (e: any) => void;
 }
