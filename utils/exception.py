@@ -40,3 +40,13 @@ def raise_generic_exception(detail: str = "An error occurred"):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         detail=detail
     )
+
+def raise_resource_exists_exception(item: str = "Item"):
+    """
+    Raises a 409 Conflict exception with a default message.
+    """
+    message = f"{item} already exists"
+    raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT,
+        detail=message
+    )
