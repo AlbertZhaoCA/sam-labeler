@@ -3,16 +3,24 @@
 
 // This source code is licensed under the license found in the
 // LICENSE file in the root directory of this source tree.
+
+// Modifications made by: Albert Zhao
+// Date: Nov 12 2024
+// Add right click to set background labeled points
+
 'use client';
 import React, { useContext, useEffect, useState } from 'react';
 import AppContext from './hooks/createContext';
 import { ToolProps } from './helpers/Interfaces';
-import * as _ from 'underscore';
 
-const Tool = ({ handleMouseMove }: ToolProps) => {
+const Tool = ({
+  handleMouseMove,
+  handleMouseClick,
+  handleRightClick,
+}: ToolProps) => {
   const {
     image: [image],
-    maskImg: [maskImg, setMaskImg],
+    maskImg: [maskImg],
   } = useContext(AppContext)!;
 
   // Determine if we should shrink or grow the images to match the
@@ -49,8 +57,9 @@ const Tool = ({ handleMouseMove }: ToolProps) => {
     <>
       {image && (
         <img
+          onClick={handleMouseClick}
           onMouseMove={handleMouseMove}
-          onMouseOut={() => _.defer(() => setMaskImg(null))}
+          onContextMenu={handleRightClick}
           onTouchStart={handleMouseMove}
           src={image.src}
           className={`${
