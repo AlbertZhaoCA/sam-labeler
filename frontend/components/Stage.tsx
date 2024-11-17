@@ -51,10 +51,12 @@ const Stage = () => {
     rate: 0,
     info: '',
   });
+  const [submitted, setSubmitted] = useState(false);
 
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);
     toast.success('Rating updated');
+    setSubmitted(false);
   };
 
   const handleTagInputKeyDown = (
@@ -64,15 +66,22 @@ const Stage = () => {
       event.preventDefault();
       setTags([...tags, tagInput.trim()]);
       setTagInput('');
+      setSubmitted(false);
+    }else if (event.key === 'Enter') {
+      event.preventDefault();
+      if(tags.length === 0)
+      toast.error('Tag cannot be empty');
     }
   };
 
   const handleRemoveTag = (index: number) => {
     setTags(tags.filter((_, i) => i !== index));
+    setSubmitted(false);
   };
 
-  const handleTagInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTagInput(event.target.value);
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setTagInput(e.target.value);
   };
 
   // Get mouse position and scale the (x, y) coordinates back to the natural
@@ -90,6 +99,7 @@ const Stage = () => {
     y *= imageScale;
     const click = getClick(x, y);
     if (click) setClicks([click]);
+    setSubmitted(false);
   }, 15);
 
   // change hover to click
@@ -106,6 +116,7 @@ const Stage = () => {
     y *= imageScale;
     const click = getClick(x, y);
     if (click) setClicks(clicks ? [...clicks, click] : [click]);
+    setSubmitted(false);
   };
 
   const handleRightClick = (e: any) => {
@@ -120,14 +131,30 @@ const Stage = () => {
     y *= imageScale;
     const click = { x, y, clickType: 0 };
     if (click) setClicks(clicks ? [...clicks, click] : [click]);
+    setSubmitted(false);
   };
 
   const handleInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, info: e.target.value });
+    setSubmitted(false);
   };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  }
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if(tags.length === 0) {
+      toast.error('Tags cannot be empty');
+      return;
+    }
+    if(maskImg === null) {
+      toast.error('Please annotate the image');
+      return;
+    }
     const imgUrl = maskImg?.src;
     fetch('http://127.0.0.1:8000/annotation', {
       method: 'POST',
@@ -147,8 +174,9 @@ const Stage = () => {
         console.log(data);
         setAnnotation_id(data.id);
         toast.success(
-          'Annotation submitted, but You have to save the image, or it will be lost',
+          'Congratulations! submitted successfully',
         );
+        setSubmitted(true); 
       })
       .catch((error) => {
         console.log('Error:', error);
@@ -203,6 +231,7 @@ const Stage = () => {
           Your Thinking
         </label>
         <Input
+          onKeyDown={handleKeyDown}
           onChange={handleInfoChange}
           type="text"
           placeholder="Enter your thinking as comments"
@@ -227,7 +256,7 @@ const Stage = () => {
             ))}
           </div>
         </div>
-        <Button type="submit" className="w-full">
+        <Button disabled={submitted} type="submit" className="w-full">
           Submit
         </Button>
       </form>
