@@ -63,6 +63,7 @@ export default function AnnotationTool() {
         setImage(event.target?.result as string);
       };
       reader.readAsDataURL(e.target.files[0]);
+      router.push('/label#uploaded-image');
     }
   };
 
@@ -134,20 +135,6 @@ export default function AnnotationTool() {
             onChange={handleImageUpload}
             className="group-hover:border-blue-500 transition-colors duration-300"
           />
-          <div className="flex space-x-5">
-            <Button
-              onClick={() => setImage(null)}
-              className="flex-1 bg-white hover:bg-red-400 text-sm text-red-500 hover:text-white transition-colors duration-300"
-            >
-              Remove 🗑️
-            </Button>
-            <Button
-              onClick={handleFileUpload}
-              className="flex-1 bg-white hover:bg-green-400 text-sm text-blue-500 hover:text-white transition-colors duration-300"
-            >
-              Start 🏷️
-            </Button>
-          </div>
         </div>
         <div className="group mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-4 group-hover:text-blue-500 transition-colors duration-300">
@@ -172,7 +159,7 @@ export default function AnnotationTool() {
           <Skeleton className="h-64 w-full" />
         ) : (
           image && (
-            <div className="relative group space-y-2">
+            <div id="uploaded-image" className="relative group space-y-2">
               <Image
                 width={100}
                 height={200}
@@ -201,12 +188,30 @@ export default function AnnotationTool() {
                   onChange={handleFileDataChange}
                 />
               </form>
+
+              <div className="flex space-x-5">
+                <Button
+                  onClick={() => setImage(null)}
+                  className="flex-1 bg-white hover:bg-red-400 text-sm text-red-500 hover:text-white transition-colors duration-300"
+                >
+                  Remove 🗑️
+                </Button>
+                <Button
+                  onClick={handleFileUpload}
+                  className="flex-1 bg-white hover:bg-green-400 text-sm text-blue-500 hover:text-white transition-colors duration-300"
+                >
+                  Start 🏷️
+                </Button>
+              </div>
             </div>
           )
         )}
       </div>
 
-      <div className="overflow-auto flex flex-col space-y-4 break-all border-2 rounded-md mr-2 p-2 border-[rgba(193,87,87,0.7)]">
+      <div
+        id="danger-zone"
+        className="overflow-auto flex flex-col space-y-4 break-all border-2 rounded-md mr-2 p-2 border-[rgba(193,87,87,0.7)]"
+      >
         <h1 className="text-destructive text-5xl font-bold">DANGER ZONE</h1>
         <p className="text-muted-foreground text-2xl">
           Make sure you know what you are doing 😘
