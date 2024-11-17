@@ -10,7 +10,7 @@ const Loading = ({
   size: 'small' | 'medium' | 'large';
 }) => {
   return (
-    <div className="absolute z-50 inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
+    <div className="fixed z-50 inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
       <div className="p-4 w-3/4 h-3/4 md:w-1/2 md:h-1/2 bg-white rounded-lg shadow-lg flex items-center justify-center">
         <TrophySpin color={color} size={size} text={text} textColor="#56b2bd" />
       </div>
