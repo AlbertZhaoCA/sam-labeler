@@ -4,17 +4,13 @@ import React from 'react';
 import AppContext from './hooks/createContext';
 import { useRouter } from 'next/navigation';
 
-import {
-  MousePointerClick,
-  Hand,
-  ArrowRightToLine,
-  Trash,
-} from 'lucide-react';
+import { MousePointerClick, Hand, ArrowRightToLine, Trash } from 'lucide-react';
 
 const Toolbar = () => {
   const {
+    maskImg: [, setMaskImg],
     clickMode: [clickMode, setClickMode],
-    clicks: [ ,setClicks],
+    clicks: [, setClicks],
   } = React.useContext(AppContext)!;
   const router = useRouter();
 
@@ -40,7 +36,10 @@ const Toolbar = () => {
         {clickMode ? <span>Hover</span> : <span>Click</span>}
       </button>
       <button
-        onClick={() => setClicks([])}
+        onClick={() => {
+          setClicks(null);
+          setMaskImg(null);
+        }}
         className="px-8 py-2 rounded-xl flex hover:bg-blue-400 hover:text-white transition-colors ease-in duration-75  items-center space-x-1 text-gray-700 "
       >
         <Trash className="h-5 w-5" />
