@@ -33,12 +33,16 @@ To get started with Sam Labeler, follow these steps:
 
 ## Upcoming Features 
 
-- [ ] Feature 1: Add React Frontend for click labeling
+- [x] Feature 1: Add React Frontend for click labeling
     - [x] Next.js frontend
-    - [ ] Add click labeling
-- [ ] Feature 2: Use sqlite or postgres for to be labeled images information storage and management
+    - [x] Add click labeling
+    - [x] Finalize data fetch pattern and its implementation in Next.js.
+- [x] Feature 2: Use sqlite or postgres for to be labeled images information storage and management
     - [x] sqlite and sqlalchemy are used for storing labeled images
-      - [ ] Decide whether to migrate to postgres
+      - [x] Decide whether to migrate to postgres
+        Explore M3 or other storage services for efficient cloud storage (in the upcoming version 2.0).
+
+
 ## Documentation
 
 - [ ] Write comment 
@@ -54,3 +58,5 @@ To get started with Sam Labeler, follow these steps:
 
 
 ## Completed Tasks
+- [x] Frontend prototype
+- [x] Backend prototype
