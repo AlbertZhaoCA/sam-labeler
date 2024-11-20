@@ -22,6 +22,8 @@ const AppContextProvider = (props: { children: React.ReactNode }) => {
   const [clickMode, setClickMode] = useState<boolean>(false);
   const [annotation_id, setAnnotation_id] = useState<number | null>(null);
   const [original_id, setOriginal_id] = useState<number>(0);
+  const [maskData, setMaskData] = useState<any | null>(null);
+  
   return (
     <AppContext.Provider
       value={{
@@ -32,6 +34,7 @@ const AppContextProvider = (props: { children: React.ReactNode }) => {
         maskImg: [maskImg, setMaskImg],
         toast,
         original_id: [original_id, setOriginal_id],
+        maskData: [maskData, setMaskData],
       }}
     >
       {props.children}

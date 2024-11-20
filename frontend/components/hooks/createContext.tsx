@@ -28,6 +28,7 @@ interface contextProps {
   ];
   toast: typeof toast;
   original_id: [original_id: number, setOriginal_id: (e: number) => void];
+  maskData: [ maskData:any | null, setMaskData: (e:any | null) => void];
 }
 
 const AppContext = createContext<contextProps | null>(null);
