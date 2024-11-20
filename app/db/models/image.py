@@ -25,5 +25,5 @@ class AnnotatedImage(Base):
     image_data: Mapped[non_nullable_blob_data]
     created_time: Mapped[created_timestamp]
     last_modified_time: Mapped[modified_timestamp]
-    annotations = relationship("Annotation", back_populates="annotated_images")
+    annotations = relationship("Annotation", back_populates="annotated_images", cascade="all, delete-orphan", single_parent=True)
 

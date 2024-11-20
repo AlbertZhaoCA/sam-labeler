@@ -3,7 +3,6 @@ from app.db.models.annotation import Annotation
 from app.db.models.image import AnnotatedImage
 from app.db.models.tag import Tag
 
-
 def get_annotation_by_id(session, annotation_id):
     annotation = session.query(Annotation).filter(Annotation.id == annotation_id).first()
     return annotation

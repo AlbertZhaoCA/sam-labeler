@@ -53,6 +53,7 @@ def get_preference_setting_id(session):
 def get_preference_setting(session):
     setting_id = get_preference_setting_id(session)
     setting = get_setting_by_id(session, setting_id)
+    session.close()
     return setting
 
 

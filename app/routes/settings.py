@@ -14,14 +14,15 @@ import datetime
 router = APIRouter()
 
 class Setting(BaseModel):
+    name: str = Field(..., example="tested config used, stewie")
     dataset_path: str = Field(..., example="/Users/rupert/deep-learning/segment/checkpoints/datas/data_set")
     model_path: str = Field(..., example="/Users/rupert/deep-learning/segment/checkpoints/sam_vit_b_01ec64.pth")
     model_type: str = Field(..., example="vit_b")
     params: dict[str, str] = Field( example={"dtype": "float32"})
     notes: str = Field(..., example="This setting is for the vit_b model, only test purpose")
-    name: str = Field(..., example="tested config used, stewie")
-
+   
 class SettingResponse(Setting):
+    id: int = Field(..., example=1)
     created_time: datetime.datetime = Field(..., example="2024-09-01T00:00:00")
     last_modified_time: datetime.datetime = Field(..., example="2024-09-01T00:00:00")
 
@@ -35,7 +36,6 @@ async def get_setting(*, session:Session=Depends(get_db_session),setting_id: int
         if setting_id is None:
             settings = get_settings(session)
             for setting in settings:
-                print(setting.name)
                 setting.params = json.loads(setting.params)
         else:
             settings = get_setting_by_id(session,setting_id)
@@ -72,10 +72,10 @@ async def get_preference_setting(*, session:Session=Depends(get_db_session)):
     except Exception as e:
         print(e)
         raise exception.raise_generic_exception()
-    return setting_id
+    return {"id":setting_id}
 
 @router.put("/settings/preference",description="Update the preference setting")
-async def update_preference_setting(*, session:Session=Depends(get_db_session), setting_id: int = Query(..., description="set given setting as preferred setting", example="2")):
+async def update_preference_setting(*, session:Session=Depends(get_db_session), setting_id: int = Query(...,alias="id", description="set given setting as preferred setting", example="2")):
     try:
         setting = get_setting_by_id(session,setting_id)
         if not setting:
@@ -84,4 +84,17 @@ async def update_preference_setting(*, session:Session=Depends(get_db_session), 
     except Exception as e:
         print(e)
         raise exception.raise_generic_exception()
-    return setting_id
+    return {"id":setting_id}
+
+@router.delete("/settings",description="Delete a setting by ID")
+async def delete_setting(*, session:Session=Depends(get_db_session), setting_id: int = Query(...,alias="id", description="Setting ID", example="1")):
+    try:
+        setting = get_setting_by_id(session,setting_id)
+        if not setting:
+            raise exception.raise_resource_not_found_exception('setting',setting_id)
+        session.delete(setting)
+        session.commit()
+    except Exception as e:
+        print(e)
+        raise exception.raise_generic_exception()
+    return {"id": "Setting deleted"}

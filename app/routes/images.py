@@ -4,7 +4,7 @@ import json
 from io import BytesIO
 from typing import List, Optional
 
-from fastapi import APIRouter, UploadFile, Depends, Path, Body, Form
+from fastapi import APIRouter, UploadFile, Depends, Path, Body, Form, Query
 from pydantic import BaseModel, Field
 from starlette.responses import StreamingResponse
 from app.db.data_access.image import (add_or_image_by_upload, get_or_images, add_or_local_images,
@@ -16,10 +16,6 @@ from app.db.models.base import Session, get_db_session
 from utils.exception import raise_not_found_exception
 
 router = APIRouter()
-temp_session = Session()
-setting = get_preference_setting(temp_session)
-temp_session.close()
-dataset_dir = None
 
 
 class ImageModel(BaseModel):
@@ -40,7 +36,7 @@ class AnnotatedImageModel(BaseModel):
 class ImageResponse(BaseModel):
     info: Optional[str] = Field(example=["file my_cat.jpg uploaded"])
     id: int = Field(..., example=[1])
-    annotation_id: Optional[list[int]] = Field(None, example=[1,2,3,4])
+    annotation_id: Optional[list[int]] = Field(None, example=[1, 2, 3, 4])
     filename: str = Field(..., example=["my_cat.jpg", "my dog"])
     labeled: bool = Field(..., example=[True])
     url: str = Field(..., example=["images/1"])
@@ -58,7 +54,7 @@ class AnnotatedImageResponse(BaseModel):
 
 
 @router.post("/images", response_model=ImageResponse)
-async def upload_file(*, session: Session = Depends(get_db_session), file: UploadFile=Form(), image: str =Form()):
+async def upload_file(*, session: Session = Depends(get_db_session), file: UploadFile = Form(), image: str = Form()):
     try:
         original_image_data = await file.read()
         image = ImageModel.parse_raw(image)
@@ -75,8 +71,22 @@ async def upload_file(*, session: Session = Depends(get_db_session), file: Uploa
             "labeled": image.labeled}
 
 
-@router.get("/images", response_model=List[ImageResponse])
-async def list_images(session: Session = Depends(get_db_session)):
+@router.get("/images", response_model=List[ImageResponse] | ImageResponse)
+async def list_images(session: Session = Depends(get_db_session), image_id: Optional[int] = Query(None, alias="id")):
+    if image_id:
+        image = _get_image(session, image_id)
+        if image is None:
+            raise_not_found_exception('Images')
+
+        return {"id": image.id,
+                "filename": image.filename,
+                'url': f"images/{image.id}",
+                'last_modified_time': image.last_modified_time,
+                'created_time': image.created_time,
+                "labeled": image.labeled,
+                "info": image.info,
+                "annotation_id": [annotation.id for annotation in image.annotations]
+                }
     images = get_or_images(session)
     return [{"id": image.id,
              "filename": image.filename,
@@ -147,7 +157,7 @@ async def get_image_by_id(image_id: int, session: Session = Depends(get_db_sessi
 
 @router.post("/images/local")
 async def upload_local_images(session: Session = Depends(get_db_session)):
-    print(setting.dataset_path)
+    setting = get_preference_setting(session)
     try:
         if setting and setting.dataset_path:
             images = pick_images(setting.dataset_path, recursive=True, repeat=False, open=False)
@@ -230,6 +240,9 @@ async def delete_image_by_id(image_id: int, session: Session = Depends(get_db_se
         image = get_anno_image_by_id(session, image_id)
         if image is None:
             raise_not_found_exception('Images')
+        original_image = image.annotations.originals
+        if len(original_image.annotations ) == 1:
+            original_image.labeled = False
         session.delete(image)
         session.commit()
     except Exception as e:
