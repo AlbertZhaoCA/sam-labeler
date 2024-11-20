@@ -1,13 +1,4 @@
-/* eslint-disable */
-import {
-  FileStack,
-  Home,
-  Search,
-  Settings,
-  ImagePlus,
-  GalleryVertical,
-} from 'lucide-react';
-
+import React from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -18,8 +9,28 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import {
+  LucideProps,
+  Home,
+  Search,
+  Settings,
+  FileStack,
+  GalleryHorizontal,
+  Images,
+  SquareDashedMousePointer,
+  StickyNote,
+} from 'lucide-react';
+import Link from 'next/link';
 
-// Menu items.
+type ItemsProps = {
+  title: string;
+  url: string;
+  icon: React.ForwardRefExoticComponent<
+    Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
+  >;
+  children?: ItemsProps[];
+};
+
 const items = [
   {
     title: 'Home',
@@ -27,14 +38,25 @@ const items = [
     icon: Home,
   },
   {
-    title: 'Label',
-    url: '/label',
-    icon: ImagePlus,
-  },
-  {
     title: 'Gallery',
     url: '/gallery',
-    icon: GalleryVertical,
+    icon: GalleryHorizontal,
+    children: [
+      {
+        title: 'mask',
+        url: '/gallery/mask',
+        icon: Images,
+      }, {
+        title: 'original',
+        url: '/gallery',
+        icon: Images,
+      }
+    ],
+  },
+  {
+    title: 'Label',
+    url: '/label',
+    icon: SquareDashedMousePointer,
   },
   {
     title: 'Search',
@@ -51,7 +73,28 @@ const items = [
     url: 'http://127.0.0.1:8000/docs',
     icon: FileStack,
   },
+  {
+    title: 'Annotation Data',
+    url: '/details',
+    icon: StickyNote,
+  },
 ];
+
+const renderMenuItems = (items: ItemsProps[]) => {
+  return items.map((item) => (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton asChild>
+        <Link href={item.url}>
+          <item.icon />
+          <span>{item.title}</span>
+        </Link>
+      </SidebarMenuButton>
+      {item.children && (
+        <ul className="ml-4">{renderMenuItems(item.children)}</ul>
+      )}
+    </SidebarMenuItem>
+  ));
+};
 
 export function AppSidebar() {
   return (
@@ -60,18 +103,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>SAM Labeler</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <SidebarMenu>{renderMenuItems(items)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
