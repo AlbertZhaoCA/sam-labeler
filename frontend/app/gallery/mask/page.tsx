@@ -1,6 +1,8 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { Gallery } from '../_components/Gallery';
+import GalleryContext from '../_hooks/createContext';
+import { app_url } from '@/constants';
 
 type itemProps = {
   id: number;
@@ -37,12 +39,17 @@ export default function Page() {
   const [mergedItems, setMergedItems] = useState<
     mergedItemProps[] | itemProps[]
   >();
+  const {
+    toast,
+    refetch: [refetch],
+  } = useContext(GalleryContext)!;
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/images/annotated', {
+    fetch(`${app_url}/images/annotated`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
       },
     })
       .then((response) => response.json())
@@ -51,13 +58,14 @@ export default function Page() {
         setItems(data);
       })
       .catch((error) => console.log('Failed to fetch data:', error));
-  }, []);
+  }, [refetch]);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/annotations', {
+    fetch(`${app_url}/annotations`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
       },
     })
       .then((response) => response.json())
@@ -65,7 +73,7 @@ export default function Page() {
         setAnnotations(data);
       })
       .catch((error) => console.log('Failed to fetch data:', error));
-  }, []);
+  }, [refetch]);
 
   useEffect(() => {
     if (annotations.length === 0 || items.length === 0) return;

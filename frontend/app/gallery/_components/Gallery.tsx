@@ -11,7 +11,16 @@ import {
 import { get_local_date_and_time_utc } from '@/utils/time-format';
 import Image, { ImageProps } from 'next/image';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import GalleryContext from '../_hooks/createContext';
+import { useContext } from 'react';
+import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { app_url } from '@/constants';
+
 interface ImgProps extends Omit<ImageProps, 'alt'> {
+  img_id: number;
+  url: string;
   src: string;
   info?: string;
   annotation?: { tags: string[]; rate: number; original_id: number };
@@ -34,7 +43,9 @@ type image = {
 };
 
 export function GalleryImage({
+  img_id,
   info,
+  url,
   annotation,
   alt = 'image not exists',
   title = 'Image',
@@ -43,14 +54,49 @@ export function GalleryImage({
   labeled,
   ...img
 }: ImgProps) {
-  console.log('annotation', annotation);
+  const {
+    toast,
+    refetch: [refetch, setRefetch],
+  } = useContext(GalleryContext)!;
+
+  const deleteImage = async (url: string) => {
+    await fetch(`${app_url}/${url}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+      })
+      .then((data) => {
+        console.log(data);
+        if (data.error) {
+          toast.error('Failed to delete image');
+          return;
+        }
+        toast.success('Image deleted successfully');
+        setRefetch(!refetch); // To do: Use React Query for refetching data
+      })
+      .catch((error) => {
+        toast.error('Failed to delete image:', error);
+        console.log(error);
+      });
+  };
+  const path = usePathname();
+  const router = useRouter();
+  const isAnnotated = path.includes('mask');
+
   return (
     <Card
       className={cn(
         labeled
           ? 'border-green-500 hover:shadow-2xl shadow-green-500 '
           : 'border-gray-300 hover:shadow-2xl shadow-destructive ',
-        'border-2 shadow-sm transition-shadow duration-300',
+        'border-2 shadow-sm transition-shadow duration-300 relative',
       )}
     >
       <CardHeader>
@@ -120,6 +166,19 @@ export function GalleryImage({
           )}
         </div>
       </CardFooter>
+      <div className="absolute bottom-0 right-0 flex flex-col space-y-2">
+        {!isAnnotated && (
+          <Button
+            onClick={() => router.push(`/label/${img_id}`)}
+            variant={'secondary'}
+          >
+            labelme
+          </Button>
+        )}
+        <Button onClick={() => deleteImage(url)} variant={'destructive'}>
+          delete
+        </Button>
+      </div>
     </Card>
   );
 }
@@ -129,7 +188,9 @@ export function Gallery({ items }: { items: image[] | undefined }) {
     <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-4">
       {items?.map((image: image) => (
         <GalleryImage
-          src={`http://127.0.0.1:8000/${image.url}`}
+          img_id={image.id}
+          url={image.url}
+          src={`${app_url}/${image.url}`}
           key={image.id}
           title={image.filename}
           last_modified_time={image.last_modified_time}

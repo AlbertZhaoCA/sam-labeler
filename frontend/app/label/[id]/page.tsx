@@ -23,6 +23,7 @@ import AppContext from '@/components/hooks/createContext';
 const ort = require('onnxruntime-web');
 import Loading from '@/components/ui/loadding-indictor';
 import npyjs from 'npyjs';
+import { app_url } from '@/constants';
 
 const MODEL_DIR = '/model.onnx';
 
@@ -32,6 +33,7 @@ const App = ({ params }: { params: Promise<{ id: number }> }) => {
     clicks: [clicks],
     image: [, setImage],
     maskImg: [, setMaskImg],
+    maskData: [, setMaskData],
   } = useContext(AppContext)!;
   const [model, setModel] = useState<InferenceSession | null>(null); // ONNX model
   const [tensor, setTensor] = useState<Tensor | null>(null); // Image embedding tensor
@@ -48,8 +50,8 @@ const App = ({ params }: { params: Promise<{ id: number }> }) => {
       const { id } = await params;
       setOriginal_id(id);
       // Load the image
-      const IMAGE_PATH = `http://127.0.0.1:8000/images/${id}`;
-      const url = new URL(IMAGE_PATH, 'http://127.0.0.1:8000');
+      const IMAGE_PATH = `${app_url}/images/${id}`;
+      const url = new URL(IMAGE_PATH, app_url);
 
       loadImage(url);
 
@@ -93,15 +95,12 @@ const App = ({ params }: { params: Promise<{ id: number }> }) => {
   };
 
   const fetchEmbedding = async (imageId: number) => {
-    const response = await fetch(
-      `http://127.0.0.1:8000/inferences/${imageId}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    const response = await fetch(`${app_url}/inferences/${imageId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    );
+    });
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
@@ -142,6 +141,7 @@ const App = ({ params }: { params: Promise<{ id: number }> }) => {
         // Run the SAM ONNX model with the feeds returned from modelData()
         const results = await model.run(feeds);
         const output = results[model.outputNames[0]];
+        setMaskData([output.data, output.dims[2], output.dims[3]]);
         // The predicted mask returned from the ONNX model is an array which is
         // rendered as an HTML image using onnxMaskToImage() from maskUtils.tsx.
         setMaskImg(

@@ -7,6 +7,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import Image from 'next/image';
 import { DatabaseIcon, BotIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { app_url } from '@/constants';
 
 export default function AnnotationTool() {
   const [image, setImage] = useState<string | null>(null);
@@ -31,27 +32,52 @@ export default function AnnotationTool() {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPreference = async () => {
+      return await fetch(`${app_url}/settings/preference`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return res.json();
+        })
+        .then((data) => {
+          return data.id;
+        })
+        .catch((_) => {
+          toast.error('Failed to fetch preference');
+          return null;
+        });
+    };
+
+    const fetchSetting = async () => {
+      const id = await fetchPreference();
+      if (!id) return;
+
       try {
-        const res = await fetch('http://127.0.0.1:8000/settings', {
+        const res = await fetch(`${app_url}/settings?id=${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true',
           },
         });
         const data = await res.json();
-        if (data && data.length > 0) {
-          setSetting(data[0]);
+        if (data) {
+          setSetting(data);
         }
         /* eslint-disable @typescript-eslint/no-unused-expressions */
-        data[0]
-          ? toast.success('synced with setting ⚙️')
-          : toast.error('No setting found');
+        data ?? toast.error('No setting found');
       } catch (error) {
         toast.error('Failed to fetch data');
       }
     };
-    fetchData();
+    fetchSetting();
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,10 +100,11 @@ export default function AnnotationTool() {
 
   const handleImageDBInit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const res = await fetch('http://127.0.0.1:8000/images/local', {
+    const res = await fetch(`${app_url}/images/local`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
       },
     });
     res
@@ -100,9 +127,12 @@ export default function AnnotationTool() {
       formData.append('image', JSON.stringify(fileFormData));
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/images', {
+        const response = await fetch(`${app_url}/images`, {
           method: 'POST',
           body: formData,
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          },
         });
 
         const data = await response.json();
@@ -229,21 +259,25 @@ export default function AnnotationTool() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {Object.entries(setting).map(([key, value]) => (
-              <tr key={key}>
-                <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {key}
-                </td>
-                {key == 'parmas' && (
-                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {JSON.stringify(value, null, 2)}
+            {Object.entries(setting).map(([key, value]) => {
+              if (key === 'id') return null;
+              return (
+                <tr key={key}>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {key}
                   </td>
-                )}
-                <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {JSON.stringify(value, null, 2)}
-                </td>
-              </tr>
-            ))}
+                  {key === 'params' ? (
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {JSON.stringify(value, null, 2)}
+                    </td>
+                  ) : (
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {JSON.stringify(value, null, 2)}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 

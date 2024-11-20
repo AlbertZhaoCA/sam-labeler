@@ -6,6 +6,9 @@ import { useEffect, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import toast, { Toaster } from 'react-hot-toast';
 import { get_local_time_utc } from '@/utils/time-format';
+import { cn } from '@/lib/utils';
+import { Heart, Trash } from 'lucide-react';
+import { app_url } from '@/constants';
 
 type Settings = {
   id: number;
@@ -28,26 +31,25 @@ export default function Settings() {
     name: '',
     id: '',
   });
-
+  const [preferred, setPreferred] = useState<number>(1);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState<Settings[]>([]);
   const pathRegex = /^\/(?:[a-zA-Z0-9_\-\.]+(?:\/[a-zA-Z0-9_\-\.]+)*)?$/;
 
-  const fetchData = async (refetch?: boolean) => {
+  const fetchSetting = async (refetch?: boolean) => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/settings', {
+      const res = await fetch(`${app_url}/settings`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
       });
       const data = await res.json();
-      if (data.length == 0) return;
+      if (data.length == 0) setSettings(data[0]);
       setSettings(data);
       if (refetch) return;
       if (data.length > 0) setFormData(data[0]);
-      toast.success('Data fetched successfully');
-      console.log(data);
     } catch (error) {
       console.log(error);
       toast.error('Failed to fetch data');
@@ -56,9 +58,85 @@ export default function Settings() {
     }
   };
 
+  const fetchPreferredSetting = () => {
+    fetch(`${app_url}/settings/preference`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setPreferred(data.id);
+      })
+      .catch((error) => {
+        toast.error('Failed to fetch data');
+        console.error('Error fetching data:', error);
+      });
+  };
+
+  const updatePreferredSetting = async (id: number) => {
+    fetch(`${app_url}/settings/preference?id=${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setPreferred(data.id);
+        fetchPreferredSetting();
+      })
+      .catch((error) => {
+        toast.error('Failed to fetch data');
+        console.error('Error fetching data:', error);
+      });
+  };
+
+  const deleteSetting = async (id: number) => {
+    fetch(`${app_url}/settings?id=${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
+      .then((_) => {
+        toast.success('Setting deleted successfully');
+        fetchSetting();
+      })
+      .catch((error) => {
+        toast.error('Failed to fetch data');
+        console.error('Error fetching data:', error);
+      });
+  };
+
   useEffect(() => {
-    fetchData();
+    fetchSetting();
+    fetchPreferredSetting();
   }, []);
+
+  useEffect(() => {
+    console.log(settings);
+  }, [preferred]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -73,10 +151,11 @@ export default function Settings() {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/settings', {
+      const res = await fetch(`http://${app_url}/settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
         },
         body: JSON.stringify(formData),
       });
@@ -93,7 +172,7 @@ export default function Settings() {
         }
       }
       toast.success('Setting saved successfully');
-      fetchData(true);
+      fetchSetting(true);
     } catch (error) {
       console.log(error);
       toast.error('Failed to submit form');
@@ -189,74 +268,87 @@ export default function Settings() {
 
       <div>
         <h1 className="text-2xl font-bold flex flex-col">Settings</h1>
-        <div className="overflow-x-auto rounded-sm">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID or name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  data set path
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  model path
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  model type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  parameters
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Notes
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Modified
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200 font-mono">
-              {settings.map((setting, index) => (
-                <tr
-                  key={index}
-                  className="hover:bg-gray-100 transition duration-150 ease-in-out"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap break-all">
-                    <p>{setting.name || setting.id}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap break-all">
-                    <p>{setting.dataset_path}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap break-all">
-                    <p>{setting.model_path}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap break-all">
-                    <p>{setting.model_type}</p>
-                  </td>
-                  {setting.params && (
-                    <td className="px-6 py-4 whitespace-nowrap break-all">
+        <div className="flex flex-col space-y-8 overflow-x-auto rounded-sm">
+          {settings.map((setting, index) => (
+            <div key={setting.name} className="relative">
+              <div
+                key={index}
+                className={cn(
+                  ' bg-white divide-y divide-gray-200 font-mono mb-4 p-4 rounded shadow hover:bg-gray-100 transition duration-150 ease-in-out',
+                  preferred === setting.id ? 'border border-blue-500' : '',
+                )}
+              >
+                <div className="flex">
+                  <div className="w-1/3 font-medium text-gray-500">
+                    ID or name:
+                  </div>
+                  <div className="w-2/3 break-all">
+                    {setting.name || setting.id}
+                  </div>
+                </div>
+                <div className="flex mt-2">
+                  <div className="w-1/3 font-medium text-gray-500">
+                    Dataset path:
+                  </div>
+                  <div className="w-2/3 break-all">{setting.dataset_path}</div>
+                </div>
+                <div className="flex mt-2">
+                  <div className="w-1/3 font-medium text-gray-500">
+                    Model path:
+                  </div>
+                  <div className="w-2/3 break-all">{setting.model_path}</div>
+                </div>
+                <div className="flex mt-2">
+                  <div className="w-1/3 font-medium text-gray-500">
+                    Model type:
+                  </div>
+                  <div className="w-2/3 break-all">{setting.model_type}</div>
+                </div>
+                {setting.params && (
+                  <div className="flex mt-2">
+                    <div className="w-1/3 font-medium text-gray-500">
+                      Parameters:
+                    </div>
+                    <div className="w-2/3 break-all">
                       {Object.entries(setting.params).map(([key, value]) => (
                         <p key={key}>
                           {key}: {value}
                         </p>
                       ))}
-                    </td>
+                    </div>
+                  </div>
+                )}
+                <div className="flex mt-2">
+                  <div className="w-1/3 font-medium text-gray-500">Notes:</div>
+                  <div className="w-2/3 break-all">{setting.notes}</div>
+                </div>
+                <div className="flex mt-2">
+                  <div className="w-1/3 font-medium text-gray-500">
+                    Last Modified:
+                  </div>
+                  <div className="w-2/3 break-all">
+                    {setting.last_modified_time
+                      ? get_local_time_utc(setting.last_modified_time)
+                      : 'N/A'}
+                  </div>
+                </div>
+              </div>
+              <div className="absolute flex top-2 right-2 space-x-2">
+                <Heart
+                  onClick={() => updatePreferredSetting(setting.id)}
+                  className={cn(
+                    preferred == setting.id
+                      ? 'text-red-400 fill-current'
+                      : 'text-muted-foreground ',
                   )}
-                  <td className="px-6 py-4 whitespace-nowrap break-all">
-                    <p>{setting.notes}</p>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap break-all">
-                    <p>
-                      {setting.last_modified_time
-                        ? get_local_time_utc(setting.last_modified_time)
-                        : 'N/A'}
-                    </p>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                />
+                <Trash
+                  onClick={() => deleteSetting(setting.id)}
+                  className="text-muted-foreground"
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
