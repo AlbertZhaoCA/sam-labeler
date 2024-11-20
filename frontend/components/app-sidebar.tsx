@@ -46,11 +46,12 @@ const items = [
         title: 'mask',
         url: '/gallery/mask',
         icon: Images,
-      }, {
+      },
+      {
         title: 'original',
         url: '/gallery',
         icon: Images,
-      }
+      },
     ],
   },
   {

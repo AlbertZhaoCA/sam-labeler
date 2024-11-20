@@ -25,7 +25,6 @@ import { handleImageScale } from './helpers/scaleHelper';
 import { resizeMaskData } from './helpers/scaleHelper';
 import { app_url } from '@/constants';
 
-
 type formDataProps = {
   tags: string[];
   rate: number;
@@ -42,11 +41,11 @@ const Stage = () => {
     original_id: [original_id],
     maskData,
   } = useContext(AppContext)!;
-  
-  let [_maskData,w,h] = [null,0,0];
+
+  let [_maskData, w, h] = [null, 0, 0];
 
   if (maskData[0] !== null) {
-    [_maskData,w,h] = maskData[0];
+    [_maskData, w, h] = maskData[0];
   }
 
   const getClick = (x: number, y: number): modelInputProps => {
@@ -62,7 +61,7 @@ const Stage = () => {
     rate: 0,
     info: '',
   });
- 
+
   const [submitted, setSubmitted] = useState(false);
 
   const handleRatingChange = (newRating: number) => {
@@ -199,40 +198,45 @@ const Stage = () => {
   useEffect(() => {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d');
-    
+
     if (!ctx || !_maskData || !image?.src) return;
-    
+
     const originalImage = new Image();
     originalImage.src = image.src;
     originalImage.crossOrigin = 'use-credentials';
 
     originalImage.onerror = (error) => {
       console.log(originalImage.crossOrigin);
-      console.log('Failed to load image',error);
-    }
-    
+      console.log('Failed to load image', error);
+    };
+
     originalImage.onload = () => {
       const { width, height, samScale } = handleImageScale(originalImage);
       console.log(width, height, samScale);
-      
+
       canvas.width = width * samScale;
       canvas.height = height * samScale;
-      
-      const resizedMask = resizeMaskData(_maskData, width, height, canvas.width, canvas.height);
-  
+
+      const resizedMask = resizeMaskData(
+        _maskData,
+        width,
+        height,
+        canvas.width,
+        canvas.height,
+      );
+
       ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
-      
+
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
-  
+
       for (let i = 0; i < resizedMask.length; i++) {
         if (resizedMask[i] <= 0.0) {
           data[4 * i + 3] = 0;
         }
       }
-      
-      ctx.putImageData(imageData, 0, 0);
 
+      ctx.putImageData(imageData, 0, 0);
     };
   }, [maskData, image]);
 
@@ -262,8 +266,6 @@ const Stage = () => {
     };
   }, []);
 
-
-  
   return (
     <div
       className={`${flexCenterClasses} mt-8 w-full  h-full flex flex-col space-y-8`}
@@ -340,7 +342,7 @@ const Stage = () => {
         </Button>
       </form>
       <canvas id="canvas"></canvas>
-      </div>
+    </div>
   );
 };
 

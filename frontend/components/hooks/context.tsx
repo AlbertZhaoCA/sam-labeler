@@ -23,7 +23,7 @@ const AppContextProvider = (props: { children: React.ReactNode }) => {
   const [annotation_id, setAnnotation_id] = useState<number | null>(null);
   const [original_id, setOriginal_id] = useState<number>(0);
   const [maskData, setMaskData] = useState<any | null>(null);
-  
+
   return (
     <AppContext.Provider
       value={{
