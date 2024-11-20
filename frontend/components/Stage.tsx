@@ -9,9 +9,9 @@
 // Add click instead of hover
 // Right click to set background labeled points
 // Provide annotation record of tags, rate, and comment
-// ...
+// Provide image clipping
 
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import * as _ from 'underscore';
 import Tool from './Tool';
 import { modelInputProps } from './helpers/Interfaces';
@@ -21,6 +21,10 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Toaster } from 'react-hot-toast';
+import { handleImageScale } from './helpers/scaleHelper';
+import { resizeMaskData } from './helpers/scaleHelper';
+import { app_url } from '@/constants';
+
 
 type formDataProps = {
   tags: string[];
@@ -36,7 +40,14 @@ const Stage = () => {
     image: [image],
     maskImg: [maskImg],
     original_id: [original_id],
+    maskData,
   } = useContext(AppContext)!;
+  
+  let [_maskData,w,h] = [null,0,0];
+
+  if (maskData[0] !== null) {
+    [_maskData,w,h] = maskData[0];
+  }
 
   const getClick = (x: number, y: number): modelInputProps => {
     const clickType = 1;
@@ -51,6 +62,7 @@ const Stage = () => {
     rate: 0,
     info: '',
   });
+ 
   const [submitted, setSubmitted] = useState(false);
 
   const handleRatingChange = (newRating: number) => {
@@ -67,10 +79,9 @@ const Stage = () => {
       setTags([...tags, tagInput.trim()]);
       setTagInput('');
       setSubmitted(false);
-    }else if (event.key === 'Enter') {
+    } else if (event.key === 'Enter') {
       event.preventDefault();
-      if(tags.length === 0)
-      toast.error('Tag cannot be empty');
+      if (tags.length === 0) toast.error('Tag cannot be empty');
     }
   };
 
@@ -143,23 +154,24 @@ const Stage = () => {
     if (e.key === 'Enter') {
       e.preventDefault();
     }
-  }
+  };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(tags.length === 0) {
+    if (tags.length === 0) {
       toast.error('Tags cannot be empty');
       return;
     }
-    if(maskImg === null) {
+    if (maskImg === null) {
       toast.error('Please annotate the image');
       return;
     }
     const imgUrl = maskImg?.src;
-    fetch('http://127.0.0.1:8000/annotation', {
+    fetch(`${app_url}/annotation`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
       },
       body: JSON.stringify({
         tags,
@@ -173,10 +185,8 @@ const Stage = () => {
       .then((data) => {
         console.log(data);
         setAnnotation_id(data.id);
-        toast.success(
-          'Congratulations! submitted successfully',
-        );
-        setSubmitted(true); 
+        toast.success('Congratulations! submitted successfully');
+        setSubmitted(true);
       })
       .catch((error) => {
         console.log('Error:', error);
@@ -185,9 +195,78 @@ const Stage = () => {
   };
 
   const flexCenterClasses = 'flex items-center justify-center';
+
+  useEffect(() => {
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx || !_maskData || !image?.src) return;
+    
+    const originalImage = new Image();
+    originalImage.src = image.src;
+    originalImage.crossOrigin = 'use-credentials';
+
+    originalImage.onerror = (error) => {
+      console.log(originalImage.crossOrigin);
+      console.log('Failed to load image',error);
+    }
+    
+    originalImage.onload = () => {
+      const { width, height, samScale } = handleImageScale(originalImage);
+      console.log(width, height, samScale);
+      
+      canvas.width = width * samScale;
+      canvas.height = height * samScale;
+      
+      const resizedMask = resizeMaskData(_maskData, width, height, canvas.width, canvas.height);
+  
+      ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
+      
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+  
+      for (let i = 0; i < resizedMask.length; i++) {
+        if (resizedMask[i] <= 0.0) {
+          data[4 * i + 3] = 0;
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+
+    };
+  }, [maskData, image]);
+
+  const saveCanvas = () => {
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    if (canvas) {
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = 'image.png';
+      link.click();
+      toast.success('image saved successfully');
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        saveCanvas();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+
+  
   return (
     <div
-      className={`${flexCenterClasses} mt-8 w-full h-full flex flex-col space-y-8`}
+      className={`${flexCenterClasses} mt-8 w-full  h-full flex flex-col space-y-8`}
     >
       <Toaster />
       <Toolbar />
@@ -260,7 +339,8 @@ const Stage = () => {
           Submit
         </Button>
       </form>
-    </div>
+      <canvas id="canvas"></canvas>
+      </div>
   );
 };
 
