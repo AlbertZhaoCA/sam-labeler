@@ -15,4 +15,21 @@ const handleImageScale = (image: HTMLImageElement) => {
   return { height: h, width: w, samScale };
 };
 
-export { handleImageScale };
+//Alber Zhao Nov 20 2024 used to resize the mask data
+const resizeMaskData = (maskData:any, originalWidth:number, originalHeight:number, targetWidth:number, targetHeight:number) => {
+  const resizedMask = new Uint8ClampedArray(targetWidth * targetHeight);
+  const scaleX = originalWidth / targetWidth;
+  const scaleY = originalHeight / targetHeight;
+
+  for (let y = 0; y < targetHeight; y++) {
+    for (let x = 0; x < targetWidth; x++) {
+      const srcX = Math.floor(x * scaleX);
+      const srcY = Math.floor(y * scaleY);
+      resizedMask[y * targetWidth + x] = maskData[srcY * originalWidth + srcX];
+    }
+  }
+
+  return resizedMask;
+};
+
+export { handleImageScale,resizeMaskData };
