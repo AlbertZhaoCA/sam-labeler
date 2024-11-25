@@ -110,7 +110,6 @@ export function GalleryImage({
           width={300}
           height={100}
           {...img}
-          unoptimized
         />
       </CardContent>
       <CardFooter>

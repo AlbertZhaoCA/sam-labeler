@@ -13,11 +13,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import AppContext from './hooks/createContext';
 import { ToolProps } from './helpers/Interfaces';
 
-const Tool = ({
-  handleMouseMove,
-  handleMouseClick,
-  handleRightClick,
-}: ToolProps) => {
+const Tool = ({ handleMouseMove, handleMouseClick }: ToolProps) => {
   const {
     image: [image],
     maskImg: [maskImg],
@@ -49,17 +45,17 @@ const Tool = ({
     };
   }, [image]);
 
-  const imageClasses = '';
-  const maskImageClasses = `absolute opacity-40 pointer-events-none`;
+  const imageClasses = 'absolute inset-0 mx-auto';
+  const maskImageClasses = `absolute opacity-40 pointer-events-none inset-0 mx-auto`;
 
   // Render the image and the predicted mask image on top
   return (
-    <>
+    <div className="relative w-[500px] h-[500px] mx-auto">
       {image && (
         <img
+          draggable={false}
           onClick={handleMouseClick}
           onMouseMove={handleMouseMove}
-          onContextMenu={handleRightClick}
           onTouchStart={handleMouseMove}
           src={image.src}
           className={`${
@@ -69,13 +65,14 @@ const Tool = ({
       )}
       {maskImg && (
         <img
+          draggable={false}
           src={maskImg.src}
           className={`${
             shouldFitToWidth ? 'w-full' : 'h-full'
           } ${maskImageClasses}`}
         ></img>
       )}
-    </>
+    </div>
   );
 };
 
