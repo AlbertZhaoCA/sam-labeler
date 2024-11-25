@@ -3,9 +3,10 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="flex w-screen flex-col items-center justify-center min-h-screen p-8 sm:p-20 bg-gradient-to-r from-white via-blue-500 to-purple-600 text-white">
+    <div className="flex w-screen flex-col items-center justify-center min-h-screen p-4 sm:p-8 bg-gradient-to-r from-white via-blue-500 to-purple-600 text-white">
+      <img src="/robust.png" className="w-48 self-start " />
       <h1
-        className="font-mono text-8xl text-center font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-purple-400 to-blue-100"
+        className="mt-8 font-mono text-8xl text-center font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-purple-400 to-blue-100"
         style={{ textShadow: '4px 5px 5px rgba(255, 0, 0, 0.3)' }}
       >
         Welcome to SAM Labeler <span className="text-white">🏷️</span>
