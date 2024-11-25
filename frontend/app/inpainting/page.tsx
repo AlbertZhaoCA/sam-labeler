@@ -15,6 +15,7 @@ import { app_url } from '@/constants';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
+import LoadingComp from '@/components/ui/loadding-indictor';
 
 export default function Page() {
   const [originalData, setOriginalData] = useState<any[]>([]);
@@ -26,6 +27,7 @@ export default function Page() {
   );
   const [selected, setSelected] = useState<string | undefined>(undefined);
   const [submitted, setSubmitted] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/images/annotated`, {
@@ -118,8 +120,9 @@ export default function Page() {
     const [imageUrl, maskUrl] = inpainted;
     console.log('Submitting:', imageUrl, maskUrl, prompts[submitted]);
     try {
+      setLoading(true);
       const response = await axios.post(
-        `http://localhost:8001/inpainting`,
+        `${app_url}/inpainting`,
         {
           image_url: imageUrl,
           mask_url: maskUrl,
@@ -146,11 +149,15 @@ export default function Page() {
       console.log('Image downloaded successfully');
     } catch (err) {
       console.error('Error uploading files:', err);
+    }finally{
+      setLoading(false);
     }
   };
 
   return (
+
     <div className="container mx-auto p-4">
+      {loading && <LoadingComp size='large'  />}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {imageData.length > 0 ? (
           imageData.map((item, index) => {

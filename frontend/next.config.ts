@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       'localhost',
       '127.0.0.1',
       'c634-65-175-57-118.ngrok-free.app',
+      '3e81-65-175-57-118.ngrok-free.app'
+
     ],
     minimumCacheTTL: 10,
   },
