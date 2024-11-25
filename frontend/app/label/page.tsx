@@ -110,8 +110,12 @@ export default function AnnotationTool() {
     res
       .json()
       .then((data) => {
-        if (data.error) toast.error(data.error);
-        else toast.success('Images loaded to db');
+        if (data.error) {
+          toast.error(data.error);
+          return;
+        }
+        setLoading(!loading);
+        toast.success('Images loaded to db');
         console.log(data);
       })
       .catch((err) => {
@@ -122,6 +126,7 @@ export default function AnnotationTool() {
 
   const handleFileUpload = async () => {
     if (file) {
+      setLoading(true);
       const formData = new FormData();
       formData.append('file', file);
       formData.append('image', JSON.stringify(fileFormData));
@@ -139,9 +144,11 @@ export default function AnnotationTool() {
         console.log('File uploaded successfully', data.id);
         toast.success('File uploaded successfully');
         router.push(`/label/${data.id}`);
+        setLoading(false);
       } catch (error) {
         console.log(error);
         toast.error('Error uploading file');
+        setLoading(false);
       }
     }
   };
@@ -222,13 +229,13 @@ export default function AnnotationTool() {
               <div className="flex space-x-5">
                 <Button
                   onClick={() => setImage(null)}
-                  className="flex-1 bg-white hover:bg-red-400 text-sm text-red-500 hover:text-white transition-colors duration-300"
+                  className={`flex-1 bg-white hover:bg-red-400 text-sm text-red-500 hover:text-white transition-colors duration-300`}
                 >
                   Remove 🗑️
                 </Button>
                 <Button
                   onClick={handleFileUpload}
-                  className="flex-1 bg-white hover:bg-green-400 text-sm text-blue-500 hover:text-white transition-colors duration-300"
+                  className={`flex-1 bg-white hover:bg-green-400 text-sm text-blue-500 hover:text-white transition-colors duration-300`}
                 >
                   Start 🏷️
                 </Button>

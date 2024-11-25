@@ -10,6 +10,7 @@
 // Right click to set background labeled points
 // Provide annotation record of tags, rate, and comment
 // Provide image clipping
+// Provide cache for image
 
 import React, { useContext, useEffect, useState } from 'react';
 import * as _ from 'underscore';
@@ -24,6 +25,7 @@ import { Toaster } from 'react-hot-toast';
 import { handleImageScale } from './helpers/scaleHelper';
 import { resizeMaskData } from './helpers/scaleHelper';
 import { app_url } from '@/constants';
+import { Eraser, Pencil, SquareDashedMousePointer } from 'lucide-react';
 
 type formDataProps = {
   tags: string[];
@@ -93,6 +95,7 @@ const Stage = () => {
     e.preventDefault();
     setTagInput(e.target.value);
   };
+  const [add, setAdd] = useState(true);
 
   // Get mouse position and scale the (x, y) coordinates back to the natural
   // scale of the image. Update the state of clicks with setClicks to trigger
@@ -124,23 +127,13 @@ const Stage = () => {
     const imageScale = image ? image.width / el.offsetWidth : 1;
     x *= imageScale;
     y *= imageScale;
-    const click = getClick(x, y);
-    if (click) setClicks(clicks ? [...clicks, click] : [click]);
-    setSubmitted(false);
-  };
-
-  const handleRightClick = (e: any) => {
-    e.preventDefault();
-    if (!clickMode) return;
-    const el = e.nativeEvent.target;
-    const rect = el.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-    const imageScale = image ? image.width / el.offsetWidth : 1;
-    x *= imageScale;
-    y *= imageScale;
-    const click = { x, y, clickType: 0 };
-    if (click) setClicks(clicks ? [...clicks, click] : [click]);
+    if (add) {
+      const click = getClick(x, y);
+      if (click) setClicks(clicks ? [...clicks, click] : [click]);
+    } else {
+      const click = { x, y, clickType: 0 };
+      if (click) setClicks(clicks ? [...clicks, click] : [click]);
+    }
     setSubmitted(false);
   };
 
@@ -202,8 +195,32 @@ const Stage = () => {
     if (!ctx || !_maskData || !image?.src) return;
 
     const originalImage = new Image();
-    originalImage.src = image.src;
-    originalImage.crossOrigin = 'use-credentials';
+    originalImage.crossOrigin = 'anonymous';
+
+    const fetchAndCacheImage = async (url: string) => {
+      const cache = await caches.open('image-cache');
+      const cachedResponse = await cache.match(url);
+      if (cachedResponse) {
+        const blob = await cachedResponse.blob();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          originalImage.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(blob);
+      } else {
+        const response = await fetch(url);
+        const responseClone = response.clone();
+        cache.put(url, responseClone);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          originalImage.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(blob);
+      }
+    };
+
+    fetchAndCacheImage(image.src);
 
     originalImage.onerror = (error) => {
       console.log(originalImage.crossOrigin);
@@ -238,7 +255,7 @@ const Stage = () => {
 
       ctx.putImageData(imageData, 0, 0);
     };
-  }, [maskData, image]);
+  }, [maskData, image?.src]);
 
   const saveCanvas = () => {
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -253,6 +270,8 @@ const Stage = () => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey) {
+      }
       if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         event.preventDefault();
         saveCanvas();
@@ -274,10 +293,21 @@ const Stage = () => {
       <Toolbar />
       <div className={`${flexCenterClasses} relative w-[90%] h-[90%]`}>
         <Tool
-          handleRightClick={handleRightClick}
           handleMouseClick={handleMouseClick}
           handleMouseMove={handleMouseMove}
         />
+        <div className="absolute right-0 flex flex-col space-y-4">
+          {add && (
+            <Button className="w-32" onClick={() => setAdd(false)}>
+              <Eraser size={24} className="text-white" /> <span>Remove</span>
+            </Button>
+          )}
+          {!add && (
+            <Button className="w-32" onClick={() => setAdd(true)}>
+              <Pencil size={24} className="text-white" /> <span>Add</span>
+            </Button>
+          )}
+        </div>
       </div>
       <form action="" className="w-full" onSubmit={handleFormSubmit}>
         <label className="w-full block text-sm font-medium text-gray-700 mb-4">
