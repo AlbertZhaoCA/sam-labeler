@@ -103,7 +103,7 @@ export default function Page() {
                 className="mb-4 p-4 border flex flex-col rounded-lg shadow"
               >
                 <div className="mb-8">
-                  <h1 className="text-2xl font-extrabold mt-4 mb-2">
+                  <h1 className="text-2xl font-extrabold mt-4 mb-2 break-words">
                     {original?.filename}
                   </h1>
                   <p>{original?.info}</p>
