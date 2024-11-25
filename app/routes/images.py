@@ -119,7 +119,7 @@ async def get_image_by_id(image_id: int, session: Session = Depends(get_db_sessi
     if image is None:
         raise_not_found_exception('Images')
 
-    return StreamingResponse(BytesIO(image.image_data), media_type="image/jpeg")
+    return StreamingResponse(BytesIO(image.image_data))
 
 
 @router.put("/images/{image_id}")

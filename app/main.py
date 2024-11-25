@@ -5,6 +5,17 @@ from app.routes import images, settings, inference, tags, annotation
 
 app = FastAPI(description='SAM Labeler', version='0.0.1',title='SAM Labeler')
 
+
+@app.middleware("http")
+async def add_csp_header(request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = ("img-src 'self' http://localhost:3000 https://1797-65-175-57-118.ngrok-free.app "
+                                                   "data:;")
+    response.headers["Access-Control-Allow-Origin"] = "*"
+
+    return response
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
