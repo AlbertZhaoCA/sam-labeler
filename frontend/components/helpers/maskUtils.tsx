@@ -9,7 +9,7 @@
 /* eslint-disable */
 
 function arrayToImageData(input: any, width: number, height: number) {
-  const [r, g, b, a] = [0, 114, 189, 255]; // the masks's blue color
+  const [r, g, b, a] = [255, 255, 255, 255]; // the masks's blue color
   const arr = new Uint8ClampedArray(4 * width * height).fill(0);
   for (let i = 0; i < input.length; i++) {
     // Threshold the onnx model mask prediction at 0.0
@@ -20,6 +20,11 @@ function arrayToImageData(input: any, width: number, height: number) {
       arr[4 * i + 1] = g;
       arr[4 * i + 2] = b;
       arr[4 * i + 3] = a;
+    } else {
+      arr[4 * i + 0] = 0;
+      arr[4 * i + 1] = 0;
+      arr[4 * i + 2] = 0;
+      arr[4 * i + 3] = 255;
     }
   }
   return new ImageData(arr, height, width);
