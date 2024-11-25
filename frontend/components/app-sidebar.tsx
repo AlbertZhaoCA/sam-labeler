@@ -19,6 +19,7 @@ import {
   Images,
   SquareDashedMousePointer,
   StickyNote,
+  Paintbrush
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -78,6 +79,11 @@ const items = [
     title: 'Annotation Data',
     url: '/details',
     icon: StickyNote,
+  },
+  {
+    title: 'inpainting',
+    url: '/inpainting',
+    icon: Paintbrush,
   },
 ];
 
