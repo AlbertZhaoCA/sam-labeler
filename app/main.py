@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import images, settings, inference, tags, annotation
+from app.routes import images, settings, inference, tags, annotation,inpainting
 
 app = FastAPI(description='SAM Labeler', version='0.0.1',title='SAM Labeler')
 
@@ -28,8 +28,9 @@ app.include_router(images.router)
 app.include_router(settings.router)
 app.include_router(inference.router)
 app.include_router(tags.router)
-app.include_router(tags.router)
 app.include_router(annotation.router)
+app.include_router(inpainting.router)
+
 
 
 
