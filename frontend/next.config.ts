@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
       'cdn.pixabay.com',
       'localhost',
       '127.0.0.1',
-      '3d34-65-175-57-118.ngrok-free.app',
+      'c634-65-175-57-118.ngrok-free.app',
     ],
     minimumCacheTTL: 10,
   },
