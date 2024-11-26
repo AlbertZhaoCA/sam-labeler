@@ -3,7 +3,9 @@ will transfer to another
 '''
 import io
 
+import httpx
 import torch
+from PIL import Image
 from fastapi import Body, APIRouter
 from starlette.responses import StreamingResponse
 from lib.sam.embedding import Embedder
@@ -20,11 +22,19 @@ pipe = StableDiffusionInpaintPipeline.from_pretrained(
 
 if torch.cuda.is_available():
     pipe = pipe.to("cuda")
+    print("Using CUDA")
 elif torch.mps.is_available():
+    print("Using MPS")
     pipe = pipe.to("mps")
 else:
     pipe = pipe.to("cpu")
+    print("Using CPU")
 
+async def load_image_async(image_url: str):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(image_url)
+        response.raise_for_status()  # 确保请求成功
+        return Image.open(io.BytesIO(response.content))
 
 @router.post("/inpainting")
 async def inpaint_image(
@@ -33,15 +43,14 @@ async def inpaint_image(
         prompt: str = Body(),
 ):
     try:
-        source_image = load_image(
+        source_image = await load_image_async(
             image_url
         )
         source = preprocess_image(source_image)
-        mask = preprocess_mask(
-            load_image(
+        mask_image = await load_image_async(
                mask_url
-            )
         )
+        mask = preprocess_mask(mask_image)
 
         print(image_url, mask_url, prompt)
 

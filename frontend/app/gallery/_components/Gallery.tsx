@@ -104,7 +104,7 @@ export function GalleryImage({
         {info && <CardDescription>{info}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <Image
+        <img
           className="max-h-[400px] w-auto mx-auto"
           alt={alt}
           width={300}

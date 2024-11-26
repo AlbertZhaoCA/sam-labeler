@@ -176,14 +176,14 @@ export default function Page() {
                 </div>
 
                 <div className="mx-auto relative group">
-                  <Image
+                  <img
                     src={`${app_url}/images/${item.original_id}`}
                     alt={`Original Image ${item.original_id}`}
                     width={500}
                     height={500}
                     className="rounded w-auto max-h-[200px]"
                   />
-                  <Image
+                  <img
                     src={`${app_url}/${item.url}`}
                     alt={`Annotated Image ${item.id}`}
                     width={500}
