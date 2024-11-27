@@ -12,6 +12,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import AppContext from './hooks/createContext';
 import { ToolProps } from './helpers/Interfaces';
+import Image from './ui/image';
 
 const Tool = ({ handleMouseMove, handleMouseClick }: ToolProps) => {
   const {
@@ -45,14 +46,17 @@ const Tool = ({ handleMouseMove, handleMouseClick }: ToolProps) => {
     };
   }, [image]);
 
-  const imageClasses = 'absolute inset-0 mx-auto';
-  const maskImageClasses = `absolute opacity-40 pointer-events-none inset-0 mx-auto`;
+  const imageClasses = "";
+  const maskImageClasses = `absolute opacity-40 pointer-events-none`;
 
   // Render the image and the predicted mask image on top
   return (
-    <div className="relative w-[500px] h-[500px] mx-auto">
-      {image && (
-        <img
+    <>
+      {image?.src && (
+        <Image  
+          width={500}
+          height={400}
+          alt="image"
           draggable={false}
           onClick={handleMouseClick}
           onMouseMove={handleMouseMove}
@@ -61,18 +65,21 @@ const Tool = ({ handleMouseMove, handleMouseClick }: ToolProps) => {
           className={`${
             shouldFitToWidth ? 'w-full' : 'h-full'
           } ${imageClasses}`}
-        ></img>
+        />
       )}
-      {maskImg && (
-        <img
+      {maskImg?.src && (
+        <Image
+          width={500}
+          height={400}
+          alt="mask"
           draggable={false}
           src={maskImg.src}
           className={`${
             shouldFitToWidth ? 'w-full' : 'h-full'
           } ${maskImageClasses}`}
-        ></img>
+        />
       )}
-    </div>
+    </>
   );
 };
 

@@ -291,22 +291,19 @@ const Stage = () => {
     >
       <Toaster />
       <Toolbar />
-      <div className={`${flexCenterClasses} relative w-[90%] h-[90%]`}>
+      <div className={`${flexCenterClasses} relative  w-3/4 h-3/4`}>
         <Tool
           handleMouseClick={handleMouseClick}
           handleMouseMove={handleMouseMove}
         />
-        <div className="absolute right-0 flex flex-col space-y-4">
-          {add && (
-            <Button className="w-32" onClick={() => setAdd(false)}>
-              <Eraser size={24} className="text-white" /> <span>Remove</span>
-            </Button>
+        <div className="absolute left-0 top-0 flex flex-col space-y-4">
+        <Button size="icon" className="flex flex-col" onClick={() => setAdd(!add)}>
+          {add ? (
+            <Eraser size={24} className="text-white" />
+          ) : (
+            <Pencil size={24} className="text-white" />
           )}
-          {!add && (
-            <Button className="w-32" onClick={() => setAdd(true)}>
-              <Pencil size={24} className="text-white" /> <span>Add</span>
-            </Button>
-          )}
+        </Button>
         </div>
       </div>
       <form action="" className="w-full" onSubmit={handleFormSubmit}>

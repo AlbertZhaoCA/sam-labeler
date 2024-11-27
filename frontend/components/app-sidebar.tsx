@@ -19,7 +19,7 @@ import {
   Images,
   SquareDashedMousePointer,
   StickyNote,
-  Paintbrush
+  Paintbrush,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -72,7 +72,7 @@ const items = [
   },
   {
     title: 'API Docs',
-    url: 'http://127.0.0.1:8000/docs',
+    url: 'http://api.robustai.dev/docs',
     icon: FileStack,
   },
   {
