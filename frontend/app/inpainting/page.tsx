@@ -10,12 +10,12 @@ import {
   useEffect,
   useState,
 } from 'react';
-import Image from 'next/image';
 import { app_url } from '@/constants';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import LoadingComp from '@/components/ui/loadding-indictor';
+import Image from '@/components/ui/image';
 
 export default function Page() {
   const [originalData, setOriginalData] = useState<any[]>([]);
@@ -141,7 +141,7 @@ export default function Page() {
 
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'inpainted_image.png'; 
+      link.download = 'inpainted_image.png';
       link.click();
 
       // Clean up
@@ -149,15 +149,14 @@ export default function Page() {
       console.log('Image downloaded successfully');
     } catch (err) {
       console.error('Error uploading files:', err);
-    }finally{
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-
     <div className="container mx-auto p-4">
-      {loading && <LoadingComp size='large'  />}
+      {loading && <LoadingComp size="large" />}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {imageData.length > 0 ? (
           imageData.map((item, index) => {
@@ -176,14 +175,14 @@ export default function Page() {
                 </div>
 
                 <div className="mx-auto relative group">
-                  <img
+                  <Image
                     src={`${app_url}/images/${item.original_id}`}
                     alt={`Original Image ${item.original_id}`}
                     width={500}
                     height={500}
                     className="rounded w-auto max-h-[200px]"
                   />
-                  <img
+                  <Image
                     src={`${app_url}/${item.url}`}
                     alt={`Annotated Image ${item.id}`}
                     width={500}

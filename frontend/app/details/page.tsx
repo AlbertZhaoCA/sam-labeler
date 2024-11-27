@@ -11,8 +11,8 @@ import {
   useEffect,
   useState,
 } from 'react';
-import Image from 'next/image';
 import { app_url } from '@/constants';
+import Image from '@/components/ui/image';
 
 export default function Page() {
   const [originalData, setOriginalData] = useState<any[]>([]);
@@ -110,14 +110,14 @@ export default function Page() {
                 </div>
 
                 <div className="mx-auto relative group">
-                  <img
+                  <Image
                     src={`${app_url}/images/${item.original_id}`}
                     alt={`Original Image ${item.original_id}`}
                     width={500}
                     height={500}
                     className="rounded w-auto max-h-[200px]"
                   />
-                  <img
+                  <Image
                     src={`${app_url}/${item.url}`}
                     alt={`Annotated Image ${item.id}`}
                     width={500}

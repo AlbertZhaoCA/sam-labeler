@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { get_local_date_and_time_utc } from '@/utils/time-format';
-import Image, { ImageProps } from 'next/image';
+import { ImageProps } from 'next/image';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import GalleryContext from '../_hooks/createContext';
@@ -17,6 +17,7 @@ import { useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { app_url } from '@/constants';
+import Image  from '@/components/ui/image';
 
 interface ImgProps extends Omit<ImageProps, 'alt'> {
   img_id: number;
@@ -104,11 +105,11 @@ export function GalleryImage({
         {info && <CardDescription>{info}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <img
+        <Image
           className="max-h-[400px] w-auto mx-auto"
           alt={alt}
           width={300}
-          height={100}
+          height={300}
           {...img}
         />
       </CardContent>

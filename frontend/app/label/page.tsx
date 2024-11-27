@@ -197,7 +197,7 @@ export default function AnnotationTool() {
         ) : (
           image && (
             <div id="uploaded-image" className="relative group space-y-2">
-              <img
+              <Image
                 width={100}
                 height={200}
                 src={image}
