@@ -9,6 +9,7 @@ from fastapi import Body, APIRouter
 from starlette.responses import StreamingResponse
 from diffusers import StableDiffusionInpaintPipeline
 from torchvision import transforms
+from lib.groq import generate_props
 
 router = APIRouter()
 
@@ -55,16 +56,20 @@ async def inpaint_image(
 
         print(image_url, mask_url, prompt)
 
+        params = generate_props(prompt)
+        if params is None:
+            params = {'prompt': prompt,
+                      'negative_prompt':"low quality",
+                      'num_inference_steps': 50,
+                      'guidance_scale': 0.7,
+                      'strength': 1.0}
+
         result = pipe(
-            prompt=prompt,
-            negative_prompt="low quality",
             image=source,
             mask_image=mask,
             width=size[0],
             height=size[1],
-            num_inference_steps=50,
-            guidance_scale=7.5,
-            strength=0.75,
+            **params
         )
 
         inpainted_image = result.images[0]
@@ -87,6 +92,7 @@ def preprocess_image(image):
     image = transforms.ToTensor()(image)
     image = image.unsqueeze(0).to(device)
     return image,size
+
 
 def preprocess_mask(mask):
     mask = mask.convert("L")
