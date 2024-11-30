@@ -17,7 +17,7 @@ import { useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { app_url } from '@/constants';
-import Image  from '@/components/ui/image';
+import Image from '@/components/ui/image';
 
 interface ImgProps extends Omit<ImageProps, 'alt'> {
   img_id: number;

@@ -46,14 +46,14 @@ const Tool = ({ handleMouseMove, handleMouseClick }: ToolProps) => {
     };
   }, [image]);
 
-  const imageClasses = "";
+  const imageClasses = '';
   const maskImageClasses = `absolute opacity-40 pointer-events-none`;
 
   // Render the image and the predicted mask image on top
   return (
     <>
       {image?.src && (
-        <Image  
+        <Image
           width={500}
           height={400}
           alt="image"

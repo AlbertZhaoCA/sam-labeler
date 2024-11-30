@@ -297,13 +297,17 @@ const Stage = () => {
           handleMouseMove={handleMouseMove}
         />
         <div className="absolute left-0 top-0 flex flex-col space-y-4">
-        <Button size="icon" className="flex flex-col" onClick={() => setAdd(!add)}>
-          {add ? (
-            <Eraser size={24} className="text-white" />
-          ) : (
-            <Pencil size={24} className="text-white" />
-          )}
-        </Button>
+          <Button
+            size="icon"
+            className="flex flex-col"
+            onClick={() => setAdd(!add)}
+          >
+            {add ? (
+              <Eraser size={24} className="text-white" />
+            ) : (
+              <Pencil size={24} className="text-white" />
+            )}
+          </Button>
         </div>
       </div>
       <form action="" className="w-full" onSubmit={handleFormSubmit}>

@@ -3,6 +3,10 @@ import localFont from 'next/font/local';
 import './globals.css';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import ReactQueryProvider from '@/utils/ReactQueryProvider';
+import AppContextProvider from '@/hooks/context';
+
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
   variable: '--font-geist-sans',
@@ -29,11 +33,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarTrigger />
-          {children}
-        </SidebarProvider>
+        <AppContextProvider>
+          <ReactQueryProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarTrigger />
+              {children}
+            </SidebarProvider>
+            {process.env.NODE_ENV === 'development' && (
+              <ReactQueryDevtools initialIsOpen={true} />
+            )}
+          </ReactQueryProvider>
+        </AppContextProvider>
       </body>
     </html>
   );

@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import LoadingComp from '@/components/ui/loadding-indictor';
 import Image from '@/components/ui/image';
+import toast from 'react-hot-toast';
 
 export default function Page() {
   const [originalData, setOriginalData] = useState<any[]>([]);
@@ -135,6 +136,8 @@ export default function Page() {
           responseType: 'blob',
         },
       );
+      if (response.headers['content-type'].includes('json'))
+        throw new Error(response.data.error);
       const blob = new Blob([response.data], { type: 'image/png' });
       const url = window.URL.createObjectURL(blob);
       console.log(url);
@@ -144,10 +147,10 @@ export default function Page() {
       link.download = 'inpainted_image.png';
       link.click();
 
-      // Clean up
       window.URL.revokeObjectURL(url);
       console.log('Image downloaded successfully');
     } catch (err) {
+      toast.error('Error processing image');
       console.error('Error uploading files:', err);
     } finally {
       setLoading(false);

@@ -1,13 +1,13 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import toast, { Toaster } from 'react-hot-toast';
 import Image from 'next/image';
 import { DatabaseIcon, BotIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { app_url } from '@/constants';
+import AppContext from '@/hooks/createContext';
 
 export default function AnnotationTool() {
   const [image, setImage] = useState<string | null>(null);
@@ -28,6 +28,7 @@ export default function AnnotationTool() {
     info: '',
     filename: '',
   });
+  const { toast } = useContext(AppContext)!;
 
   const router = useRouter();
 
@@ -160,7 +161,6 @@ export default function AnnotationTool() {
   return (
     <div className="flex flex-col w-full item-center space-y-24">
       <div className="p-8 w-full space-y-8">
-        <Toaster />
         <h1 className="text-2xl font-bold mb-4">Annotation Tool</h1>
         <div className="group mb-4 font-mono space-y-5">
           <label className="block text-sm font-medium text-gray-700 mb-4 group-hover:text-blue-500 transition-colors duration-300">

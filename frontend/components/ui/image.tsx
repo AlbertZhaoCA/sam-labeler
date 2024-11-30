@@ -13,12 +13,14 @@ interface CustomImageProps {
 const CustomImage: React.FC<CustomImageProps> = ({
   src,
   alt,
-  width=500,
-  height=500,
+  width = 500,
+  height = 500,
   ...props
 }) => {
-  const [imageSrc, setImageSrc] = useState('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/ax3zgAAAABJRU5ErkJggg==');
-  
+  const [imageSrc, setImageSrc] = useState(
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAgAB/ax3zgAAAABJRU5ErkJggg==',
+  );
+
   // If you want to use ngrok, you can just uncomment this code, and change src to imageSrc
   // useEffect(() => {
   //   const headers = new Headers({
@@ -35,7 +37,14 @@ const CustomImage: React.FC<CustomImageProps> = ({
   // }, [src]);
 
   return (
-    <img width={width} height={height} src={src} alt={alt} {...props} loading='lazy'/>
+    <img
+      width={width}
+      height={height}
+      src={src}
+      alt={alt}
+      {...props}
+      loading="lazy"
+    />
   );
 };
 
