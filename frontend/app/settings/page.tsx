@@ -2,13 +2,14 @@
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import toast, { Toaster } from 'react-hot-toast';
 import { get_local_time_utc } from '@/utils/time-format';
 import { cn } from '@/lib/utils';
 import { Heart, Trash } from 'lucide-react';
-import { app_url } from '@/constants';
+import AppContext from '@/hooks/createContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import baseAxios from '@/utils/axiosConfig';
 
 type Settings = {
   id: number;
@@ -29,114 +30,117 @@ export default function Settings() {
     params: {},
     notes: '',
     name: '',
-    id: '',
+    id: 0,
   });
-  const [preferred, setPreferred] = useState<number>(1);
   const [loading, setLoading] = useState(true);
-  const [settings, setSettings] = useState<Settings[]>([]);
   const pathRegex = /^\/(?:[a-zA-Z0-9_\-\.]+(?:\/[a-zA-Z0-9_\-\.]+)*)?$/;
+  const { toast } = useContext(AppContext)!;
 
-  const fetchSetting = async (refetch?: boolean) => {
-    try {
-      const res = await fetch(`${app_url}/settings`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true',
-        },
-      });
-      const data = await res.json();
-      if (data.length == 0) setSettings(data[0]);
-      setSettings(data);
-      if (refetch) return;
-      if (data.length > 0) setFormData(data[0]);
-    } catch (error) {
-      console.log(error);
-      toast.error('Failed to fetch data');
-    } finally {
-      setLoading(false);
-    }
+  const queryClient = useQueryClient();
+
+  const settings = useQuery<Settings[]>({
+    queryKey: ['settings'],
+    queryFn: async () => {
+      const res = await baseAxios.get('/settings');
+      return res.data;
+    },
+    retry: 3,
+  });
+
+  const preferred = useQuery<{ id: number }>({
+    queryKey: ['settings', 'preference'],
+    queryFn: async () => {
+      const res = await baseAxios.get('/settings/preference');
+      return res.data;
+    },
+    retry: 3,
+  });
+
+  const createSetting = async (newSetting: Settings) => {
+    const res = await baseAxios.post('/settings', newSetting);
+    return res.data;
   };
 
-  const fetchPreferredSetting = () => {
-    fetch(`${app_url}/settings/preference`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setPreferred(data.id);
-      })
-      .catch((error) => {
-        toast.error('Failed to fetch data');
-        console.error('Error fetching data:', error);
-      });
-  };
-
-  const updatePreferredSetting = async (id: number) => {
-    fetch(`${app_url}/settings/preference?id=${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setPreferred(data.id);
-        fetchPreferredSetting();
-      })
-      .catch((error) => {
-        toast.error('Failed to fetch data');
-        console.error('Error fetching data:', error);
-      });
-  };
+  const mutation = useMutation({
+    mutationFn: createSetting,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+      toast.success('Setting created successfully');
+    },
+    onError: (error) => {
+      toast.error('Error creating setting');
+    },
+  });
 
   const deleteSetting = async (id: number) => {
-    fetch(`${app_url}/settings?id=${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return res.json();
-      })
-      .then((_) => {
-        toast.success('Setting deleted successfully');
-        fetchSetting();
-      })
-      .catch((error) => {
-        toast.error('Failed to fetch data');
-        console.error('Error fetching data:', error);
-      });
+    const res = await baseAxios.delete(`/settings`, { params: { id } });
+    return res.data;
   };
 
-  useEffect(() => {
-    fetchSetting();
-    fetchPreferredSetting();
-  }, []);
+  const deleteMutation = useMutation({
+    mutationFn: deleteSetting,
+    onMutate: async (id: number) => {
+      await queryClient.cancelQueries({ queryKey: ['settings'] });
 
-  useEffect(() => {
-    console.log(settings);
-  }, [preferred]);
+      const previousSettings = queryClient.getQueryData<Settings[]>([
+        'settings',
+      ]);
+
+      if (previousSettings) {
+        queryClient.setQueryData(
+          ['settings'],
+          previousSettings.filter((setting) => setting.id !== id),
+        );
+      }
+
+      return { previousSettings };
+    },
+    onError: (error, id, context) => {
+      queryClient.setQueryData(['settings'], context?.previousSettings);
+      toast.error('Error deleting setting');
+    },
+    onSuccess: () => {
+      toast.success('Setting deleted successfully');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+    },
+  });
+
+  const updatePreferred = async (id: number) => {
+    const res = await baseAxios.put('/settings/preference', null, {
+      params: { id },
+    });
+    return res.data;
+  };
+
+  const preferredMutation = useMutation({
+    mutationFn: updatePreferred,
+    onMutate: async (id: number) => {
+      await queryClient.cancelQueries({ queryKey: ['settings', 'preference'] });
+
+      const previousPreferred = queryClient.getQueryData<{ id: number }>([
+        'settings',
+        'preference',
+      ]);
+
+      if (previousPreferred) {
+        queryClient.setQueryData(['settings', 'preference'], { id });
+      }
+
+      return { previousPreferred };
+    },
+    onError: (error, id, context) => {
+      queryClient.setQueryData(
+        ['settings', 'preference'],
+        context?.previousPreferred,
+      );
+      toast.error('Error updating preferred setting');
+    },
+    onSuccess: () => {
+      toast.success('Preferred setting updated successfully');
+    },
+  });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -147,45 +151,13 @@ export default function Settings() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const res = await fetch(`http://${app_url}/settings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true',
-        },
-        body: JSON.stringify(formData),
-      });
-      if (!res.ok) {
-        if (res.status === 400) {
-          toast.error('Invalid form data');
-          return;
-        } else if (res.status === 409) {
-          toast.error('Setting already exists');
-          return;
-        } else {
-          toast.error('Failed to submit form');
-          return;
-        }
-      }
-      toast.success('Setting saved successfully');
-      fetchSetting(true);
-    } catch (error) {
-      console.log(error);
-      toast.error('Failed to submit form');
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
     }
   };
 
-  if (loading) {
+  if (settings.isLoading) {
     return (
       <Skeleton className="m-auto p-4 text-foreground">
         Loading Settings
@@ -195,10 +167,12 @@ export default function Settings() {
 
   return (
     <div className="p-8 w-full grid grid-cols-1 ">
-      <Toaster />
       <form
         onKeyDown={handleKeyDown}
-        onSubmit={handleSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          mutation.mutate(formData);
+        }}
         className="font-sans space-y-2 mb-8"
       >
         <div>
@@ -269,13 +243,15 @@ export default function Settings() {
       <div>
         <h1 className="text-2xl font-bold flex flex-col">Settings</h1>
         <div className="flex flex-col space-y-8 overflow-x-auto rounded-sm">
-          {settings.map((setting, index) => (
+          {settings?.data?.map((setting, index) => (
             <div key={setting.name} className="relative">
               <div
                 key={index}
                 className={cn(
                   ' bg-white divide-y divide-gray-200 font-mono mb-4 p-4 rounded shadow hover:bg-gray-100 transition duration-150 ease-in-out',
-                  preferred === setting.id ? 'border border-blue-500' : '',
+                  preferred?.data?.id === setting.id
+                    ? 'border border-blue-500'
+                    : '',
                 )}
               >
                 <div className="flex">
@@ -335,16 +311,16 @@ export default function Settings() {
               </div>
               <div className="absolute flex top-2 right-2 space-x-2">
                 <Heart
-                  onClick={() => updatePreferredSetting(setting.id)}
+                  onClick={() => preferredMutation.mutate(setting.id)}
                   className={cn(
-                    preferred == setting.id
+                    preferred?.data?.id == setting.id
                       ? 'text-red-400 fill-current'
                       : 'text-muted-foreground ',
                   )}
                 />
                 <Trash
-                  onClick={() => deleteSetting(setting.id)}
                   className="text-muted-foreground"
+                  onClick={() => deleteMutation.mutate(setting.id)}
                 />
               </div>
             </div>
