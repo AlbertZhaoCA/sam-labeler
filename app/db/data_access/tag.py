@@ -1,6 +1,8 @@
 from fastapi import HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.db.models.annotation import Annotation
+from app.db.models.annotation_tags import annotation_tags
 from app.db.models.tag import Tag
 
 
@@ -12,12 +14,22 @@ def get_tags_by_annotation_id(session: Session, annotation_id: int):
     return annotation.tags
 
 
-def get_annotations_by_tag_id(session: Session, tag_id: int):
-    tag = session.query(Tag).filter(Tag.id == tag_id).first()
-    if not tag:
-        raise HTTPException(status_code=404, detail=f"Tag with id {tag_id} not found.")
+def get_annotations_images_by_tag_id(session: Session, tag_id: int):
+    annotations = session.query(Annotation).join(annotation_tags).filter(annotation_tags.c.tag_id == tag_id).all()
+    returned_annotations = []
+    for annotation in annotations:
+        returned_annotations.append({
+            "id": annotation.id,
+            "info": annotation.info,
+            "rate": annotation.rate,
+            "tags": [tag.name for tag in annotation.tags],
+            "annotated": annotation.annotated_images,
+            "original": annotation.originals
+        })
 
-    return tag.annotations
+    if not returned_annotations:
+        raise HTTPException(status_code=404, detail=f"Tag with id {tag_id} not found.")
+    return returned_annotations
 
 
 def get_tags(session: Session):
@@ -84,4 +96,16 @@ def delete_tag(session: Session, tag_id: int):
     session.delete(tag)
     session.commit()
     return tag_id
+
+def query_tags_alike(session, keyword):
+    tags = session.query(Tag).filter(Tag.name.ilike(f'%{keyword}%')).all()
+    return tags
+
+def get_tag_counts(session: Session):
+    tag_counts = session.query(
+        Tag.id,
+        Tag.name,
+        func.count(annotation_tags.c.annotation_id).label('count')
+    ).join(annotation_tags, Tag.id == annotation_tags.c.tag_id).group_by(Tag.name).all()
+    return tag_counts
 

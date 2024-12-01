@@ -1,7 +1,26 @@
+import datetime
+from typing import Union
+
+from pydantic import BaseModel
 from sqlalchemy import Column, Integer, BLOB, Text, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from .base import Base, int_pk, non_nullable_blob_data, nullable_file_name, modified_timestamp, created_timestamp
 
+
+class OriginalImageResponse(BaseModel):
+    id: int
+    filename: Union[str,None]
+    labeled: bool
+    info: Union[str,None]
+    created_time: datetime.datetime
+    last_modified_time: datetime.datetime
+
+
+class AnnotatedImageResponse(BaseModel):
+    id: int
+    filename: Union[str,None]
+    created_time: datetime.datetime
+    last_modified_time: datetime.datetime
 
 class OriginalImage(Base):
     __tablename__ = 'original_images'

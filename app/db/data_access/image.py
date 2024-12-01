@@ -1,4 +1,5 @@
 from app.db.models.image import OriginalImage, AnnotatedImage
+from app.db.models.tag import Tag
 
 
 def add_annotated_image(session, annotated_image_data, annotation_id, filename=None):
@@ -52,3 +53,14 @@ def get_or_images(session):
     images = session.query(OriginalImage).all()
     session.commit()
     return images
+
+def query_or_images_alike(session, keyword):
+    images = session.query(OriginalImage).filter(OriginalImage.filename.ilike(f'%{keyword}%')).all()
+    session.commit()
+    return images
+
+def query_tags_alike(session, keyword):
+    tags = session.query(Tag).filter(Tag.name.ilike(f'%{keyword}%')).all()
+    session.commit()
+    return tags
+

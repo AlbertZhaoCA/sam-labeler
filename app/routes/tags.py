@@ -1,8 +1,10 @@
 from fastapi import APIRouter, UploadFile, Depends, Path
 from pydantic import BaseModel
-from app.db.data_access.tag import get_tags, add_tag, add_tags, delete_tag, get_tags_by_annotation_id
+from app.db.data_access.tag import (get_tags, add_tag, add_tags, delete_tag, get_tags_by_annotation_id,
+                                    get_tag_counts,get_annotations_images_by_tag_id)
 from app.db.models.base import Session, get_db_session
 from fastapi import Depends
+from app.db.models.image import OriginalImageResponse, AnnotatedImageResponse
 
 router = APIRouter()
 
@@ -11,10 +13,35 @@ class Tag_Model(BaseModel):
     name: str
 
 
+class TagCountResponse(BaseModel):
+    id: int
+    name: str
+    count: int
+
+class AnnotationsResponse(BaseModel):
+    id: int
+    info: str
+    rate: float
+    tags: list[str]|None
+    annotated: list[AnnotatedImageResponse]|None
+    original: OriginalImageResponse|None
+
+
+
+
 @router.get("/tags")
 def list_tags(session: Session = Depends(get_db_session)):
     tags = get_tags(session)
     return [{"id": tag.id, "name": tag.name} for tag in tags]
+
+@router.get("/tags/count", response_model=list[TagCountResponse])
+def list_tags(session: Session = Depends(get_db_session)):
+    tag_counts = get_tag_counts(session)
+    return tag_counts
+
+@router.get("/tags/annotations/{tag_id}",response_model=list[AnnotationsResponse])
+def get_annotation_tags(session: Session = Depends(get_db_session), tag_id: int = Path(...)):
+    return get_annotations_images_by_tag_id(session, tag_id)
 
 
 @router.post("/tag")
